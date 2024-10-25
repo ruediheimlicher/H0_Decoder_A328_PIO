@@ -97,6 +97,11 @@
 #define STARTWAIT 100
 
 
+#define HI     0xFEFE  // 1111111011111110
+#define LO     0x0202  // 0000001000000010
+#define OPEN   0x02FE  // 0000001011111110
+
+
 #define TRIT0 0
 #define TRIT1 1
 #define TRIT2 2

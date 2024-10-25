@@ -41,7 +41,7 @@
 						
 uint8_t  LOK_ADRESSE = 0xCC; //	11001100	Trinär
 //									
-//uint8_t  LOK_ADRESSE = 0x4C; //	0100 0100	Trinär//
+//uint8_t  LOK_ADRESSE = 0x1C; //	0100 1100	Trinär//
 //***********************************
 
 /*
@@ -137,14 +137,17 @@ volatile uint8_t	HIimpulsdauerSpeicher=0;		//	Speicher  fuer HIimpulsdauer
 
 volatile uint8_t   LOimpulsdauerOK=0;   
 
-volatile uint8_t   pausecounter = 0; //  neue ädaten detektieren
+volatile uint8_t   pausecounter = 0; //  neue daten detektieren
 volatile uint8_t   abstandcounter = 0; // zweites Paket detektieren
+volatile uint8_t   paketcounter = 0; // 
 
 volatile uint8_t   tritposition = 0; // nummer des trit im Paket
 volatile uint8_t   lokadresse = 0;
 
 volatile uint8_t   lokadresseA = 0;
 volatile uint8_t   lokadresseB = 0;
+
+volatile uint8_t   lokadresseTRIT = 0; // Adresse mit trit
 
 volatile uint8_t   deflokadresse = 0;
 volatile uint8_t   lokstatus=0x00; // Funktion, Richtung
@@ -495,11 +498,12 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
    if (INT0status & (1<<INT0_WAIT))
    {
       waitcounter++; 
-      if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Stautus abfragen
+      if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Status abfragen
       {
          //OSZI_A_LO();
          //OSZIAHI;
          INT0status &= ~(1<<INT0_WAIT);
+
          if (INT0status & (1<<INT0_PAKET_A))
          {
             //OSZI_B_LO();
@@ -513,6 +517,12 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                {
                   lokadresseA &= ~(1<<tritposition); // bit ist 0
                }
+               if(((lokadresseA & 0x03 ) == 0x01) || ((lokadresseA & 0x03 ) == 0x10))
+               {
+
+                  lokadresseTRIT = lokadresseA;
+               }
+
             }
             else if (tritposition < 10) // Funktion
             {
@@ -858,6 +868,8 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
          //OSZIBHI; //pause detektiert
          pausecounter = 0;
          INT0status = 0; //Neue Daten abwarten
+         paketcounter++;
+
          return;
       }
       
@@ -918,6 +930,8 @@ int main (void)
    lcd_gotoxy(0,1);
    lcd_puts("ADR ");
    lcd_puthex(LOK_ADRESSE);
+   lcd_putc(' ');
+   //lcd_hextobin(LOK_ADRESSE);
    
    //lcd_gotoxy(0,2);
    //lcd_puts(" adrIN");
@@ -960,11 +974,41 @@ int main (void)
             LOOPLEDPORT ^= (1<<LOOPLED); 
             
             lcd_gotoxy(0,2);
-            lcd_puthex(lokadresseA);
-            lcd_gotoxy(4,2);
-            lcd_puthex(lokadresseB);
+            lcd_putint(speed);
+            //lcd_gotoxy(4,2);
+            //lcd_puthex(lokadresseB);
             lcd_gotoxy(8,2);
             lcd_puthex(deflokadresse);
+            lcd_gotoxy(12,2);
+            //lcd_puthex(lokadresseTRIT);
+            lcd_gotoxy(16,2);
+            lcd_puthex(deflokdata);
+            //lokadresseTRIT = 0;
+            //if(deflokdata == 0xFF)
+            if(deflokdata > 8)
+            {
+               if(lokadresseA & 0x02)
+               {
+                  lcd_gotoxy(0,3);
+                  lcd_putc('A');
+               }
+               else
+               {
+                  lcd_gotoxy(0,3);
+                  lcd_putc('$');
+               }
+               if(lokadresseA & 0xCE)
+               {
+                  lcd_gotoxy(1,3);
+                  lcd_putc('B');
+               }
+               else
+               {
+                  lcd_gotoxy(1,3);
+                  lcd_putc('i');
+               }
+            }           
+
             firstruncount0=0;
             
             //LOOPLEDPORT ^= (1<<LOOPLED); 
