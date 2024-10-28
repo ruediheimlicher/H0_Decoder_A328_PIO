@@ -39,9 +39,13 @@
 
 //***********************************
 						
-uint8_t  LOK_ADRESSE = 0xCC; //	11001100	Trinär
-//									
-//uint8_t  LOK_ADRESSE = 0x4C; //	0100 0100	Trinär//
+uint8_t  LOK_ADRESSE = 0xF0;    //   11001100	Trinär mit Adresse 20 20 * DIP 1100
+
+//	Trinaer-Adressen								
+//uint8_t  LOK_ADRESSE = 0x80;     //	1000 0000	Trinär mit Adresse 12 00 
+//uint8_t  LOK_ADRESSE = 0xB0;     //	1011 0000	Trinär mit Adresse 12 22
+
+
 //***********************************
 
 /*
@@ -62,7 +66,7 @@ uint8_t  LOK_ADRESSE = 0xCC; //	11001100	Trinär
 /*
 #define LOOPLEDPORT		PORTD
 #define LOOPLEDDDR      DDRD
-#define LOOPLED			6
+#define LOOPLED			5
 */
 #define LOOPLEDPORT     PORTB
 #define LOOPLEDDDR      DDRB
@@ -137,14 +141,17 @@ volatile uint8_t	HIimpulsdauerSpeicher=0;		//	Speicher  fuer HIimpulsdauer
 
 volatile uint8_t   LOimpulsdauerOK=0;   
 
-volatile uint8_t   pausecounter = 0; //  neue ädaten detektieren
+volatile uint8_t   pausecounter = 0; //  neue daten detektieren
 volatile uint8_t   abstandcounter = 0; // zweites Paket detektieren
+volatile uint8_t   paketcounter = 0; // 
 
 volatile uint8_t   tritposition = 0; // nummer des trit im Paket
 volatile uint8_t   lokadresse = 0;
 
 volatile uint8_t   lokadresseA = 0;
 volatile uint8_t   lokadresseB = 0;
+
+volatile uint8_t   lokadresseTRIT = 0; // Adresse mit trit
 
 volatile uint8_t   deflokadresse = 0;
 volatile uint8_t   lokstatus=0x00; // Funktion, Richtung
@@ -441,31 +448,9 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 {
    
    
-   //OSZIATOG;
+   //OSZI_A_TOGG();
    //return;
-   
-   /*
-    if(lokstatus & (1<<FUNKTIONBIT))
-    {
-    dimmcounter++;
-    
-    if(dimmcounter > LEDPWM)
-    {
-    LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
-    
-    }
-    
-    if(dimmcounter > 253)
-    {
-    LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON, neuer Impuls
-    dimmcounter = 0;
-    }
-    
-    
-    } // if Funktionbit
-    */
-   
-   
+ 
    //OSZI_B_LO();
    if (speed)
    {
@@ -491,34 +476,44 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       //displayfenstercounter=0;
    }
    
+   
    // MARK: TIMER0 TIMER0_COMPA INT0
    if (INT0status & (1<<INT0_WAIT))
    {
       waitcounter++; 
-      if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Stautus abfragen
+      if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Status abfragen
       {
          //OSZI_A_LO();
          //OSZIAHI;
          INT0status &= ~(1<<INT0_WAIT);
          if (INT0status & (1<<INT0_PAKET_A))
          {
-            //OSZI_B_LO();
+            
             if (tritposition < 8) // Adresse)
             {
+
                if (INPIN & (1<<DATAPIN)) // Pin HI, 
                {
-                  lokadresseA |= (1<<tritposition); // bit ist 1
+                  lokadresseA |= (1<<(7-tritposition)); // bit ist 1
                }
                else // 
                {
-                  lokadresseA &= ~(1<<tritposition); // bit ist 0
+                  lokadresseA &= ~(1<<(7-tritposition)); // bit ist 0
+
                }
+               if((tritposition == 7) && (((lokadresseA & 0x03 ) == 0x01) || ((lokadresseA & 0x03 ) == 0x10)))
+               {
+
+                  lokadresseTRIT = lokadresseA;
+               }
+
             }
             else if (tritposition < 10) // Funktion
             {
                if (INPIN & (1<<DATAPIN)) // Pin HI, 
                {
                   rawfunktionA |= (1<<(tritposition-8)); // bit ist 1
+                  
                }
                else // 
                {
@@ -537,6 +532,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   rawdataA &= ~(1<<(tritposition-10)); // bit ist 0
                }
             }
+            
          }
          
          if (INT0status & (1<<INT0_PAKET_B))
@@ -546,11 +542,11 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                
                if (INPIN & (1<<DATAPIN)) // Pin HI, 
                {
-                  lokadresseB |= (1<<tritposition); // bit ist 1
+                  lokadresseB |= (1<<(7-tritposition)); // bit ist 1
                }
                else // 
                {
-                  lokadresseB &= ~(1<<tritposition); // bit ist 0
+                  lokadresseB &= ~(1<<(7-tritposition)); // bit ist 0
                }
             }
             else if (tritposition < 10) // bit 8,9: funktion
@@ -604,7 +600,8 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
             // Paket A?
             if (INT0status & (1<<INT0_PAKET_A)) // erstes Paket, Werte speichern
             {
-               
+               //OSZI_A_TOGG();
+            
                oldfunktion = funktion;
                
                INT0status &= ~(1<<INT0_PAKET_A); // Bit fuer erstes Paket weg
@@ -613,6 +610,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
             }
             else if (INT0status & (1<<INT0_PAKET_B)) // zweites Paket, Werte testen
             {
+               OSZI_B_LO();
                //SYNC_LO();
                displaystatus |= (1<<DISPLAY_GO);
                // // Displayfenster begin
@@ -626,11 +624,12 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                // MARK: EQUAL
                if (lokadresseA && ((rawfunktionA == rawfunktionB) && (rawdataA == rawdataB) && (lokadresseA == lokadresseB))) // Lokadresse > 0 und Lokadresse und Data OK
                {
+                  OSZI_A_LO();
                   if (lokadresseB == LOK_ADRESSE)
                   {
                      
                      
-                     //OSZI_A_LO();
+                     
                      // Daten uebernehmen
                      
                      lokstatus |= (1<<ADDRESSBIT);
@@ -799,6 +798,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         }
                      }
                      //SYNC_HI();
+                     OSZI_A_HI();
                   }
                   else 
                   {
@@ -827,9 +827,11 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   //               TESTPORT |= (1<<TEST2);
                }
                //SYNC_HI();
+               OSZI_B_HI();
             } // End Paket B
+          
          }
-        // OSZI_B_HI();
+        
       } // waitcounter > 2
    } // if INT0_WAIT
    
@@ -858,6 +860,8 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
          //OSZIBHI; //pause detektiert
          pausecounter = 0;
          INT0status = 0; //Neue Daten abwarten
+         paketcounter++;
+
          return;
       }
       
@@ -918,6 +922,8 @@ int main (void)
    lcd_gotoxy(0,1);
    lcd_puts("ADR ");
    lcd_puthex(LOK_ADRESSE);
+   lcd_putc(' ');
+   //lcd_hextobin(LOK_ADRESSE);
    
    //lcd_gotoxy(0,2);
    //lcd_puts(" adrIN");
@@ -953,18 +959,12 @@ int main (void)
       if(loopstatus & (1<<FIRSTRUNBIT))
       {
          firstruncount0++;
-         if (firstruncount0>=0x4FA)
+         if (firstruncount0>=0x8A)
          {
             //OSZI_B_LO();
             //OSZI_A_LO();
             LOOPLEDPORT ^= (1<<LOOPLED); 
             
-            lcd_gotoxy(0,2);
-            lcd_puthex(lokadresseA);
-            lcd_gotoxy(4,2);
-            lcd_puthex(lokadresseB);
-            lcd_gotoxy(8,2);
-            lcd_puthex(deflokadresse);
             firstruncount0=0;
             
             //LOOPLEDPORT ^= (1<<LOOPLED); 
@@ -973,31 +973,18 @@ int main (void)
             // Takt for display
             firstruncount1++;
             
-            //if (firstruncount1 >= 0xF0)
+            if (firstruncount1 >= 0xF0)
             {
-               OSZI_A_LO();
+               //OSZI_A_LO();
                //LOOPLEDPORT ^= (1<<LOOPLED);
                 int0_init();
                
                _delay_ms(2);
                 timer2(4);
                sei();
-               //loopstatus &= ~(1<<FIRSTRUNBIT);
-               
-               //loopstatus |= (1<<RUNBIT);
-               //LOOPLEDPORT |=(1<<LOOPLED);
-               //LOOPLEDDDR |= (1<<LOOPLED);
-               /*
-               LOOPLEDPORT |=(1<<LOOPLED);
-               _delay_ms(200);
-               LOOPLEDPORT &= ~(1<<LOOPLED);
-               _delay_ms(200);
-               LOOPLEDPORT |=(1<<LOOPLED);
-               _delay_ms(200);
-               LOOPLEDPORT &= ~(1<<LOOPLED);
-               _delay_ms(200);
-               */
-               OSZI_A_HI();
+               loopstatus &= ~(1<<FIRSTRUNBIT);
+   
+              // OSZI_A_HI();
             }
             //OSZI_A_HI();
          }
@@ -1027,14 +1014,14 @@ int main (void)
                
                if (SHOWDISPLAY)
                {
-                  OSZI_B_LO();
+                  //OSZI_B_LO();
                   char_x=100;
                   char_y = 1;
                   //OSZI_B_HI();
                   
                   //display_write_int(lcdcounter,1);
                   //display_write_sec_min(lcdcounter,1);
-                  OSZI_B_HI();
+                  //OSZI_B_HI();
                   lcdcounter++;
                   /*
                    char_x = RANDLINKS;
@@ -1173,10 +1160,10 @@ int main (void)
             
             // Takt for display
             displaycounter1++;
-            if (displaycounter1 > MAXLOOP1)
+            if (displaycounter1 > 0x0F)
             {
                displaycounter1=0;
-               //LOOPLEDPORT ^= (1<<LOOPLED);
+               LOOPLEDPORT ^= (1<<LOOPLED);
                counter++;
                
                //               int0_init();
