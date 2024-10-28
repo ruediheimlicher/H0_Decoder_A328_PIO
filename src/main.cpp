@@ -494,6 +494,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       //displayfenstercounter=0;
    }
    
+   
    // MARK: TIMER0 TIMER0_COMPA INT0
    if (INT0status & (1<<INT0_WAIT))
    {
@@ -517,7 +518,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                {
                   lokadresseA &= ~(1<<tritposition); // bit ist 0
                }
-               if(((lokadresseA & 0x03 ) == 0x01) || ((lokadresseA & 0x03 ) == 0x10))
+               if((tritposition == 7) && (((lokadresseA & 0x03 ) == 0x01) || ((lokadresseA & 0x03 ) == 0x10)))
                {
 
                   lokadresseTRIT = lokadresseA;
@@ -964,10 +965,10 @@ int main (void)
         
       // firstrun
       
-      if(loopstatus & (1<<FIRSTRUNBIT))
+      //if(loopstatus & (1<<FIRSTRUNBIT))
       {
          firstruncount0++;
-         if (firstruncount0>=0x4FA)
+         if (firstruncount0>=0x2A)
          {
             //OSZI_B_LO();
             //OSZI_A_LO();
@@ -980,14 +981,14 @@ int main (void)
             lcd_gotoxy(8,2);
             lcd_puthex(deflokadresse);
             lcd_gotoxy(12,2);
-            //lcd_puthex(lokadresseTRIT);
+            lcd_puthex(lokadresseTRIT);
             lcd_gotoxy(16,2);
             lcd_puthex(deflokdata);
             //lokadresseTRIT = 0;
             //if(deflokdata == 0xFF)
             if(deflokdata > 8)
             {
-               if(lokadresseA & 0x02)
+               if( ( (lokadresseA & (1<<0)) == 1) && ((((lokadresseA & (1<<1)) == 0))))
                {
                   lcd_gotoxy(0,3);
                   lcd_putc('A');
@@ -995,9 +996,9 @@ int main (void)
                else
                {
                   lcd_gotoxy(0,3);
-                  lcd_putc('$');
+                  lcd_putc(' ');
                }
-               if(lokadresseA & 0xCE)
+               if( ( (lokadresseA & (1<<7)) == 1) && ((((lokadresseA & (1<<6)) == 0))))
                {
                   lcd_gotoxy(1,3);
                   lcd_putc('B');
@@ -1005,7 +1006,7 @@ int main (void)
                else
                {
                   lcd_gotoxy(1,3);
-                  lcd_putc('i');
+                  lcd_putc(' ');
                }
             }           
 
