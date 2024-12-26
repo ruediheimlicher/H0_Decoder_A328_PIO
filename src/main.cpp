@@ -39,7 +39,7 @@
 
 //***********************************
 						
-uint8_t  LOK_ADRESSE = 0xF0;    //   11001100	Trinär mit Adresse 20 20 * DIP 1100
+uint8_t  LOK_ADRESSE = 0xCC;    //   11001100	Trinär mit Adresse 20 20 * DIP 1100
 
 //	Trinaer-Adressen								
 //uint8_t  LOK_ADRESSE = 0x80;     //	1000 0000	Trinär mit Adresse 12 00 
@@ -63,11 +63,7 @@ uint8_t  LOK_ADRESSE = 0xF0;    //   11001100	Trinär mit Adresse 20 20 * DIP 11
 
 #define DATAPIN  2 
 
-/*
-#define LOOPLEDPORT		PORTD
-#define LOOPLEDDDR      DDRD
-#define LOOPLED			5
-*/
+
 #define LOOPLEDPORT     PORTB
 #define LOOPLEDDDR      DDRB
 #define LOOPLED         0 // 
@@ -281,9 +277,7 @@ void slaveinit(void)
    displaydata[1] = 44;
    
    
-	//LOOPLEDPORT |=(1<<LOOPLED);
-   LOOPLEDDDR |= (1<<LOOPLED);
-   
+	 
   
   
 
@@ -891,7 +885,7 @@ int main (void)
 	lcd_puts("Guten Tag\0");
 	_delay_ms(1000);
 	lcd_cls();
-	lcd_puts("H0-Decoder A328");
+	lcd_puts("H0-Decoder A328_PIO");
 	
    
    
@@ -963,7 +957,7 @@ int main (void)
          {
             //OSZI_B_LO();
             //OSZI_A_LO();
-            LOOPLEDPORT ^= (1<<LOOPLED); 
+            //LOOPLEDPORT ^= (1<<LOOPLED); 
             
             firstruncount0=0;
             
@@ -999,7 +993,7 @@ int main (void)
          {  
             
             
-            
+            displaystatus &= ~(1<<DISPLAY_GO);
             // MARK: display       
             if((displaystatus & (1<<DISPLAY_GO)) ) //&& displayfenstercounter)
             {
@@ -1160,10 +1154,14 @@ int main (void)
             
             // Takt for display
             displaycounter1++;
-            if (displaycounter1 > 0x0F)
+            if (displaycounter1 > 0x0A)
             {
                displaycounter1=0;
                LOOPLEDPORT ^= (1<<LOOPLED);
+               lcd_gotoxy(17,3);
+               lcd_putint(counter);
+               lcd_gotoxy(0,2);
+               lcd_putint(speed);
                counter++;
                
                //               int0_init();
