@@ -126,7 +126,8 @@ volatile uint8_t  pausestatus=0x00;
 volatile uint8_t   address=0x00; 
 volatile uint8_t   data=0x00;   
 
-
+volatile uint16_t  saveEEPROM_Addresse = 0;
+volatile uint8_t   EEPROM_savestatus=0x00;   
 
 volatile uint16_t MEMBuffer = 0;
 
@@ -203,22 +204,28 @@ volatile uint8_t   taskcounter = 0;
 volatile uint8_t   speedlookup[15] = {};
 uint8_t speedlookuptable[10][15] =
 {
-   {0,18,36,54,72,90,108,126,144,162,180,198,216,234,252},
-   {0,30,40,50,60,70,80,90,100,110,120,130,140,150,160},
-   {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140},
-   {0,7,14,21,28,35,42,50,57,64,71,78,85,92,100},
-   {0,33,37,40,44,47,51,55,58,62,65,69,72,76,80},
+      {0,18,36,54,72,90,108,126,144,162,180,198,216,234,252},  // 0
+   {0,30,40,50,60,70,80,90,100,110,120,130,140,150,160},    // 1
+   {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140},      // 2
+   {0,7,14,21,28,35,42,50,57,64,71,78,85,92,100},           // 3
+   {0,33,37,40,44,47,51,55,58,62,65,69,72,76,80},           // 4
    
-   //{0,41,42,44,47,51,56,61,67,74,82,90,99,109,120},
-   {0,11,15,19,26,34,43,55,68,82,98,116,136,157,180},
-   {0,41,43,45,49,54,60,66,74,82,92,103,114,127,140},
-   {0,41,44,48,53,59,67,77,87,99,113,128,144,161,180},
-   {0,42,45,50,57,65,75,87,101,116,134,153,173,196,220},
-   {0,42,45,51,58,68,79,93,108,125,144,165,188,213,240}
+   {0,41,42,44,47,51,56,61,67,74,82,90,99,109,120},         // 5
+   {0,41,43,45,49,54,60,66,74,82,92,103,114,127,140},       // 6
+   
+   {0,62,65,70,77,90,105,122,140,159,170,188,200,210,220},  // 7
+   
+   {0,42,45,50,57,65,75,87,101,116,134,153,173,196,220},    // 8
+   {0,42,45,51,58,68,79,93,108,125,144,165,188,213,240}     // 9
+
 };
 
+volatile uint8_t speedindex = 7;
+
+volatile uint8_t   maxspeed =  0; //speedlookuptable[speedindex][14];
 
 volatile uint8_t   lastDIR =  0;
+
 uint8_t loopledtakt = 0x40;
 uint8_t refreshtakt = 0x45;
 uint16_t speedchangetakt = 0x350; // takt fuer beschleunigen/bremsen
@@ -226,10 +233,8 @@ uint16_t speedchangetakt = 0x350; // takt fuer beschleunigen/bremsen
 
 volatile uint8_t loktyptable[4];
 
-volatile uint8_t speedindex = 5;
-
-volatile uint8_t   maxspeed =  252;//prov.
 volatile uint8_t   minspeed =  0;
+
 uint16_t displaycounter0;
 uint16_t displaycounter1;
 
@@ -252,6 +257,10 @@ void spi_init(void) // SPI-Pins aktivieren
    SPCR = (1<<SPE)|(1<<MSTR);
    SPSR |= (1<<SPI2X);
 }
+
+uint16_t lasteepromaddress = MAX_EEPROM - 1; // letzte benutzte Adresse, max je nach typ
+uint8_t lasteepromdata = 0;
+
 
 
 void slaveinit(void)
@@ -276,13 +285,6 @@ void slaveinit(void)
    displaydata[0] = 3;
    displaydata[1] = 44;
    
-   
-	 
-  
-  
-
-  
-
 	//LCD
 	LCD_DDR |= (1<<LCD_RSDS_PIN);	//Pin 5 von PORT B als Ausgang fuer LCD
  	LCD_DDR |= (1<<LCD_ENABLE_PIN);	//Pin 6 von PORT B als Ausgang fuer LCD
@@ -350,8 +352,9 @@ void slaveinit(void)
       _delay_ms(5);
    }
    
-   
-   //LOOPLEDPORT |=(1<<LOOPLED);
+     
+    
+     
 }
 
 
@@ -442,9 +445,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 {
    
    
-   //OSZI_A_TOGG();
-   //return;
- 
    //OSZI_B_LO();
    if (speed)
    {
@@ -752,30 +752,32 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                                  
                            }
                            //OSZI_B_HI();
-                           // MARK: speed                            
+                           // MARK: speed    
+                           oldspeed = speed; // behalten
+
                            newspeed = speedlookup[speedcode]; // zielwert
                            
                            // Startbedingung
-                           if(speedcode && (speedcode ==1) && !(lokstatus & (1<<STARTBIT))  && !(lokstatus & (1<<RUNBIT))) // noch nicht gesetzt
-                           {
-                              
-                              startspeed = speedlookup[speedcode] + STARTIMPULS; // kleine Zugabe
-                              
-                              lokstatus |= (1<<STARTBIT);
-                              
-                           }// ok
-                           //
+                                                       if((speedcode == 1) && !(lokstatus & (1<<STARTBIT))  && !(lokstatus & (1<<RUNBIT))) // noch nicht gesetzt  
+                            {
+                               speed = speedlookup[1] / 8 * 7;
+                               newspeed = speedlookup[1] + STARTKICK; // kleine Zugabe
+                              //lokstatus |= (1<<STARTBIT);
+                            }
+                        
+                           else
+                            {
+                               newspeed = speedlookup[speedcode]; // zielwert
+                            }
+
                            
-                           oldspeed = speed; // behalten
                            
-                           
-                           speedintervall = (newspeed - speed)>>2; // 4 teile
-                           if((speedintervall == 0) )
-                           {
-                              //OSZI_B_LO();
-                              speedintervall = 1;
-                              //OSZI_B_HI();
-                           }
+                           speedintervall = (newspeed - oldspeed)>>2; // 4 teile
+                            if((speedcode > 2) && (speedintervall > 4) )
+                            {
+                               speedintervall = 4;
+                            }
+
                            
                            
                            
@@ -871,20 +873,59 @@ void displayfensterfunction(void)
 }
 
 
+
+// Funktion, um ein Byte in den EEPROM zu schreiben
+void EEPROM_Write(uint16_t address, uint8_t data) {
+    eeprom_update_byte((uint8_t*)address, data);
+}
+
+// Funktion, um ein Byte aus dem EEPROM zu lesen
+uint8_t EEPROM_Read(uint16_t address) {
+    return eeprom_read_byte((uint8_t*)address);
+}
+
+void EEPROM_Clear(void) 
+{
+   uint16_t addr = 0;
+   while (addr++ < MAX_EEPROM)
+   {
+      EEPROM_Write(addr, 0xFF);
+   }
+}
+// Function to read a byte from the EEPROM from ChatGPT
+uint8_t EEPROM_read(uint16_t address) {
+    // Wait for completion of previous write
+    while (EECR & (1 << EEPE));
+
+    // Set up address register
+    EEAR = address;
+
+    // Start EEPROM read by writing EERE
+    EECR |= (1 << EERE);
+
+    // Return data from the data register
+    return EEDR;
+}
+
+
+
 int main (void) 
 {
    
    
 	slaveinit();
    
- //  int0_init();
-	
-	/* initialize the LCD */
+   int0_init();
+	_delay_ms(2);
+   //timer2(4);
+   _delay_ms(100);
+	// initialize the LCD 
 	lcd_initialize(LCD_FUNCTION_8x2, LCD_CMD_ENTRY_INC, LCD_CMD_ON);
-
+   _delay_ms(100);
 	lcd_puts("Guten Tag\0");
-	_delay_ms(1000);
+	_delay_ms(100);
 	lcd_cls();
+   _delay_ms(100);
 	lcd_puts("H0-Decoder A328_PIO");
 	
    
@@ -910,7 +951,7 @@ int main (void)
    ledpwm = LEDPWM;
    
    
-   sei();
+   
    
 
    lcd_gotoxy(0,1);
@@ -940,6 +981,70 @@ int main (void)
       //setlogscreen();
    }
    */
+   lcd_gotoxy(0,3);
+
+   // naechste Adresse fuer save Status
+   for (uint16_t loc = 0;loc < MAX_EEPROM; loc++)
+   {
+      
+      uint8_t locdata = EEPROM_Read(loc);
+      if(locdata == 0xFF)
+      {
+         lcd_putint(loc);
+         lcd_putc(' ');
+         lcd_puthex(locdata);
+         lcd_putc(' ');
+         saveEEPROM_Addresse = loc;
+         break;
+
+      }
+   }
+   
+   lcd_gotoxy(8,3);
+   if(saveEEPROM_Addresse)
+   {
+      lcd_putc('*');
+      uint8_t lastsaved = EEPROM_Read(saveEEPROM_Addresse - 1);
+      lcd_puthex(lastsaved); // letzter gespeicherter Stetus
+   }
+   else
+   {
+      lcd_putc('*');
+      lcd_puts("first");
+   }
+   lcd_putc('*');
+   lcd_putint(saveEEPROM_Addresse);
+   lcd_gotoxy(12,3);
+
+
+    
+    /*
+   if(saveEEPROM_Addresse)
+   {
+      lcd_putc('*');
+      uint8_t lastsaved = EEPROM_Read(saveEEPROM_Addresse - 1);
+      lcd_puthex(lastsaved); // letzter gespeicherter Stetus
+   }
+   else
+   {
+      lcd_putc('*');
+      lcd_puts("first");
+   }
+   */
+
+    /*
+   for (uint16_t loc = MAX_EEPROM-1;loc > MAX_EEPROM - 3 ; loc--)
+   {
+     // if(loc < 4)
+      {
+         uint8_t locdata = EEPROM_Read(loc);
+         lcd_puthex(locdata);
+         lcd_putc(' ');
+
+      }
+   }
+   */
+   //sei();
    
 	while (1)
    {  
@@ -970,12 +1075,13 @@ int main (void)
             if (firstruncount1 >= 0xF0)
             {
                //OSZI_A_LO();
-               //LOOPLEDPORT ^= (1<<LOOPLED);
-                int0_init();
+ 
+                //int0_init();
                
-               _delay_ms(2);
+               //_delay_ms(2);
                 timer2(4);
                sei();
+               
                loopstatus &= ~(1<<FIRSTRUNBIT);
    
               // OSZI_A_HI();
@@ -1153,12 +1259,13 @@ int main (void)
             loopcount0=0;
             
             // Takt for display
+             // MARK: Display
             displaycounter1++;
             if (displaycounter1 > 0x0A)
             {
                displaycounter1=0;
                LOOPLEDPORT ^= (1<<LOOPLED);
-               lcd_gotoxy(17,3);
+               lcd_gotoxy(17,2);
                lcd_putint(counter);
                lcd_gotoxy(0,2);
                lcd_putint(speed);
@@ -1178,25 +1285,31 @@ int main (void)
             
             if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
             {
+            
                if(pwmpin == MOTORA_PIN)
                {
                   pwmpin = MOTORB_PIN;
                   richtungpin = MOTORA_PIN;
+                  EEPROM_savestatus &= ~(1<<MOTORA_PIN);
+                  EEPROM_savestatus |= (1<<MOTORB_PIN);
                   //ledonpin = LAMPEB_PIN;
                   // ledoffpin = LAMPEA_PIN;
                   
-                  if(lokstatus & (1<<FUNKTIONBIT))
+                  if(lokstatus & (1<<FUNKTIONBIT)) // Funktion abarbeiten
                   {
                      
                      LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                     LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A OFF
+                     LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A ON
+                     EEPROM_savestatus |= (1<<LAMPEA_PIN);
+                     EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
                   }
                   else
                   {
                      // beide lampen OFF
                      LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
                      LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
-                     
+                     EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
+                     EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                   }
                   
                }
@@ -1204,22 +1317,39 @@ int main (void)
                {
                   pwmpin = MOTORA_PIN;
                   richtungpin = MOTORB_PIN;
+                  EEPROM_savestatus &= ~(1<<MOTORB_PIN);
+                  EEPROM_savestatus |= (1<<MOTORA_PIN);
                   //ledonpin = LAMPEA_PIN;
                   //ledoffpin = LAMPEB_PIN;
                   if(lokstatus & (1<<FUNKTIONBIT))
                   {
                      
-                     LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B OFF
+                     LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B ON
                      LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                     EEPROM_savestatus |= (1<<LAMPEB_PIN);
+                     EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
+
                   }
                   else 
                   {
                      // beide lampen OFF
                      LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
                      LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                     EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
+                     EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                   }
                   
                }
+
+               // status sichern
+               EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+               
+               lcd_gotoxy(4,2);
+               lcd_putint(saveEEPROM_Addresse);
+               lcd_putc(' ');
+               lcd_puthex(EEPROM_savestatus);
+               saveEEPROM_Addresse++;
+
                MOTORPORT |= (1<<richtungpin); // Richtung setzen
                
                lokstatus &= ~(1<<LOK_CHANGEBIT);
