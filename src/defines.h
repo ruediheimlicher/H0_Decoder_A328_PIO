@@ -8,6 +8,7 @@
 #ifndef defines_h
 #define defines_h
 
+#define MAX_EEPROM      512
 #define SHORT 0 // Abstand im doppelpaket
 #define LONG 2 // Abstand zwischen Daten
 
@@ -51,7 +52,10 @@
 #define SPEEDCODE 0
 #define SPEED     1
 
+
 #define STARTIMPULS 2
+
+#define STARTKICK 10 // Verlaengerung erster Puls
 
 // bits displaystatus
 #define DISPLAY_GO   7
