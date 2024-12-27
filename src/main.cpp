@@ -343,7 +343,7 @@ void slaveinit(void)
    maxspeed = speedlookup[14];
    minspeed = speedlookup[1];
    
-   loopstatus |= (1<<FIRSTRUNBIT);
+   //loopstatus |= (1<<FIRSTRUNBIT);
 /*
    // TWI
    DDRC |= (1<<5);   //Pin 0 von PORT C als Ausgang (SCL)
@@ -924,7 +924,7 @@ int main (void)
 	slaveinit();
    
    int0_init();
-	_delay_ms(2);
+	_delay_ms(10);
    timer2(4);
    _delay_ms(100);
 	// initialize the LCD 
@@ -1053,7 +1053,7 @@ int main (void)
       }
    }
    */
-   //sei();
+   sei();
    
 	while (1)
    {  
@@ -1294,7 +1294,7 @@ int main (void)
             
             if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
             {
-            
+               
                if(pwmpin == MOTORA_PIN)
                {
                   pwmpin = MOTORB_PIN;
@@ -1349,7 +1349,10 @@ int main (void)
                   }
                   
                }
-
+               lcd_gotoxy(8,1);
+               lcd_puthex(speedcode);
+               EEPROM_savestatus &= ~0xF0;
+               EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                // status sichern
                EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                
@@ -1357,7 +1360,20 @@ int main (void)
                lcd_putint(saveEEPROM_Addresse);
                lcd_putc(' ');
                lcd_puthex(EEPROM_savestatus);
-               saveEEPROM_Addresse++;
+               
+               if(saveEEPROM_Addresse > 5)
+               {
+                  lcd_gotoxy(19,1);
+                  lcd_putc('N');
+                  EEPROM_Clear();
+                  saveEEPROM_Addresse = 0;
+               }
+               else 
+               
+               {
+                  saveEEPROM_Addresse++;
+               }
+               
 
                MOTORPORT |= (1<<richtungpin); // Richtung setzen
                
