@@ -27,7 +27,15 @@
 
 #include "text.h"
 
+/*
+*******************************************
+*******************************************
+BOD-Level auf 2.7V eingestellt. Efuse 0xFD 
+*******************************************
+*******************************************
 
+
+*/
 
 #define SHOWDISPLAY 0
 
@@ -917,7 +925,7 @@ int main (void)
    
    int0_init();
 	_delay_ms(2);
-   //timer2(4);
+   timer2(4);
    _delay_ms(100);
 	// initialize the LCD 
 	lcd_initialize(LCD_FUNCTION_8x2, LCD_CMD_ENTRY_INC, LCD_CMD_ON);
@@ -982,6 +990,7 @@ int main (void)
    }
    */
    lcd_gotoxy(0,3);
+
 
    // naechste Adresse fuer save Status
    for (uint16_t loc = 0;loc < MAX_EEPROM; loc++)
@@ -1079,7 +1088,7 @@ int main (void)
                 //int0_init();
                
                //_delay_ms(2);
-                timer2(4);
+               // timer2(4);
                sei();
                
                loopstatus &= ~(1<<FIRSTRUNBIT);
