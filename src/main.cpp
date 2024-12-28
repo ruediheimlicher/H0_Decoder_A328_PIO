@@ -236,7 +236,7 @@ volatile uint8_t   lastDIR =  0;
 
 uint8_t loopledtakt = 0x40;
 uint8_t refreshtakt = 0x45;
-uint16_t speedchangetakt = 0x350; // takt fuer beschleunigen/bremsen
+uint16_t speedchangetakt = 0x150; // takt fuer beschleunigen/bremsen
 
 
 volatile uint8_t loktyptable[4];
@@ -1019,7 +1019,7 @@ int main (void)
    else
    {
       lcd_putc('*');
-      lcd_puts("first");
+      lcd_puts("firs");
    }
    lcd_putc('*');
    lcd_putint(saveEEPROM_Addresse);
