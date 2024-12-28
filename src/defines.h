@@ -43,6 +43,7 @@
 
 #define TESTPORT        PORTB
 #define TESTDDR        DDRB
+#define TESTPIN        PINB
 
 #define TEST0     0
 #define TEST1     1

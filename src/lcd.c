@@ -93,6 +93,7 @@ extern void lcd_load_byte(uint8_t out_byte);
 void
 lcd_initialize(uint8_t set_function, uint8_t set_entry_mode, uint8_t on)
 {
+        
         /* 20ms delay while LCD powers on */
         _delay_ms(30);	   
         
