@@ -278,8 +278,8 @@ void slaveinit(void)
 	OSZIDDR |= (1<<OSZI_PULS_A);	//Pin 7 von PORT D als Ausgang fuer SOSZI B
    OSZIPORT |= (1<<OSZI_PULS_B);   //Pin 6 von PORT D als Ausgang fuer OSZI A
    OSZIDDR |= (1<<OSZI_PULS_B);   //Pin 7 von PORT D als Ausgang fuer SOSZI B
-   OSZIPORT |= (1<<SYNC);   //Pin 6 von PORT D als Ausgang fuer OSZI A
-   OSZIDDR |= (1<<SYNC);   //Pin 7 von PORT D als Ausgang fuer SOSZI B
+   //OSZIPORT |= (1<<SYNC);   //Pin 6 von PORT D als Ausgang fuer OSZI A
+   //OSZIDDR |= (1<<SYNC);   //Pin 7 von PORT D als Ausgang fuer SOSZI B
 
    //OSZIPORT |= (1<<INT_0);   //
    //OSZIDDR |= (1<<INT_0);   //Pin 7 von PORT D als Ausgang fuer SOSZI B
@@ -301,6 +301,8 @@ void slaveinit(void)
    
    TESTDDR |= (1<<TEST0); // test0
    TESTPORT |= (1<<TEST0); // HI
+   TESTDDR &= ~(1<<TEST1); // test1 INPUT
+   TESTPORT |= (1<<TEST1); // HI
    
    MOTORDDR |= (1<<MOTORA_PIN);  // Output Motor A 
    MOTORPORT |= (1<<MOTORA_PIN); // HI
@@ -1273,7 +1275,8 @@ int main (void)
             {
                displaycounter1=0;
                LOOPLEDPORT ^= (1<<LOOPLED);
-               lcd_gotoxy(17,2);
+               /*
+               lcd_gotoxy(17,1);
                lcd_putint(counter);
                lcd_gotoxy(0,2);
                lcd_putint2(speedcode);
@@ -1281,7 +1284,7 @@ int main (void)
                lcd_putint(speedlookup[speedcode]);
                lcd_putc(' ');
                lcd_putint(speed);
-
+               */
                counter++;
                
                //               int0_init();
@@ -1353,14 +1356,14 @@ int main (void)
                   }
                   
                }
-               lcd_gotoxy(8,1);
-               lcd_puthex(speedcode);
+               //lcd_gotoxy(8,1);
+               //lcd_puthex(speedcode);
                EEPROM_savestatus &= ~0xF0;
                EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                // status sichern
                EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                
-               lcd_gotoxy(4,2);
+               lcd_gotoxy(12,2);
                lcd_putint(saveEEPROM_Addresse);
                lcd_putc(' ');
                lcd_puthex(EEPROM_savestatus);
@@ -1375,6 +1378,8 @@ int main (void)
                else 
                
                {
+                  lcd_gotoxy(19,1);
+                  lcd_putc(' ');
                   saveEEPROM_Addresse++;
                }
                
