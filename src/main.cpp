@@ -236,7 +236,7 @@ volatile uint8_t   lastDIR =  0;
 
 uint8_t loopledtakt = 0x40;
 uint8_t refreshtakt = 0x45;
-uint16_t speedchangetakt = 0x350; // takt fuer beschleunigen/bremsen
+uint16_t speedchangetakt = 0x150; // takt fuer beschleunigen/bremsen
 
 
 volatile uint8_t loktyptable[4];
@@ -298,9 +298,12 @@ void slaveinit(void)
  	LCD_DDR |= (1<<LCD_ENABLE_PIN);	//Pin 6 von PORT B als Ausgang fuer LCD
 	LCD_DDR |= (1<<LCD_CLOCK_PIN);	//Pin 7 von PORT B als Ausgang fuer LCD
 
-   
+   /*
    TESTDDR |= (1<<TEST0); // test0
    TESTPORT |= (1<<TEST0); // HI
+   TESTDDR &= ~(1<<TEST1); // test1 INPUT
+   TESTPORT |= (1<<TEST1); // HI
+  */
    
    MOTORDDR |= (1<<MOTORA_PIN);  // Output Motor A 
    MOTORPORT |= (1<<MOTORA_PIN); // HI
@@ -313,6 +316,9 @@ void slaveinit(void)
     
    LAMPEDDR |= (1<<LAMPEB_PIN);  // Lampe B
    LAMPEPORT &= ~(1<<LAMPEB_PIN); // LO
+
+   LOOPLEDDDR |=(1<<LOOPLED);
+
    /*
    for(uint8_t i=0;i<2;i++)
    {
@@ -408,7 +414,7 @@ ISR(INT0_vect)
       if (INT0status == 0) // neue Daten beginnen
       {
          displaystatus &= ~(1<<DISPLAY_GO); // displayfenster end
-         SYNC_HI();
+         //SYNC_HI();
          //OSZI_A_HI(); 
          INT0status |= (1<<INT0_START);
          INT0status |= (1<<INT0_WAIT); // delay, um Wert des Eingangs zum richtigen Zeitpunkt zu messen
@@ -485,12 +491,11 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       waitcounter++; 
       if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Status abfragen
       {
-         //OSZI_A_LO();
+         OSZI_A_LO();
          //OSZIAHI;
          INT0status &= ~(1<<INT0_WAIT);
          if (INT0status & (1<<INT0_PAKET_A))
          {
-            
             if (tritposition < 8) // Adresse)
             {
 
@@ -702,13 +707,13 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         
                         {
                            
-                           
                            switch (deflokdata)
                            {
                               case 0:
                                  
                                  speedcode = 0;
                                  lokstatus &= ~(1<<STARTBIT);
+                                 lokstatus &= ~(1<<RUNBIT);   // ???
                                  break;
                               case 0x0C:
                                  
@@ -766,7 +771,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            newspeed = speedlookup[speedcode]; // zielwert
                            
                            // Startbedingung
-                                                       if((speedcode == 1) && !(lokstatus & (1<<STARTBIT))  && !(lokstatus & (1<<RUNBIT))) // noch nicht gesetzt  
+                           if((speedcode == 1) && !(lokstatus & (1<<STARTBIT))  && !(lokstatus & (1<<RUNBIT))) // noch nicht gesetzt  
                             {
                                speed = speedlookup[1] / 8 * 7;
                                newspeed = speedlookup[1] + STARTKICK; // kleine Zugabe
@@ -831,11 +836,11 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   //               TESTPORT |= (1<<TEST2);
                }
                //SYNC_HI();
-               OSZI_B_HI();
+               //OSZI_B_HI();
             } // End Paket B
           
          }
-        
+        OSZI_A_HI();
       } // waitcounter > 2
    } // if INT0_WAIT
    
@@ -864,7 +869,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
          //OSZIBHI; //pause detektiert
          pausecounter = 0;
          INT0status = 0; //Neue Daten abwarten
-         paketcounter++;
+         //paketcounter++;
 
          return;
       }
@@ -895,7 +900,7 @@ uint8_t EEPROM_Read(uint16_t address) {
 void EEPROM_Clear(void) 
 {
    uint16_t addr = 0;
-   while (addr++ < MAX_EEPROM)
+   while (addr++ < MAX_EEPROM-1)
    {
       EEPROM_Write(addr, 0xFF);
    }
@@ -934,7 +939,7 @@ int main (void)
 	_delay_ms(100);
 	lcd_cls();
    _delay_ms(100);
-	lcd_puts("H0-Decoder A328_PIO");
+	lcd_puts("H0-Decoder A328 PIO1");
 	
    
    
@@ -957,10 +962,6 @@ int main (void)
    oldfunktion = 0x03; // 0x02
    oldlokdata = 0xCE;
    ledpwm = LEDPWM;
-   
-   
-   
-   
 
    lcd_gotoxy(0,1);
    lcd_puts("ADR ");
@@ -1089,7 +1090,7 @@ int main (void)
                
                //_delay_ms(2);
                // timer2(4);
-               sei();
+               //sei();
                
                loopstatus &= ~(1<<FIRSTRUNBIT);
    
@@ -1150,37 +1151,15 @@ int main (void)
             
             if(lokstatus & (1<<FUNKTIONBIT))
             {
-               /*
-                if(dimmcounter == 3)
-                {
-                LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON
-                
-                }
-                dimmcounter++;
-                if(dimmcounter > 32)
-                {
-                LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
-                dimmcounter = 0;
-                }
-                */
+               LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON
+              
+            }
+            else
+            {
+               LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
             }
             
-            if(lokstatus & (1<<FUNKTIONBIT))
-            {
-               /*
-                if(dimmcounter == 3)
-                {
-                LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON
-                
-                }
-                dimmcounter++;
-                if(dimmcounter > 32)
-                {
-                LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
-                dimmcounter = 0;
-                }
-                */
-            }
+            
             
             //continue;
             
@@ -1191,62 +1170,46 @@ int main (void)
                lcdcounter++;
                //LOOPLEDPORT ^= (1<<LOOPLED); // Kontrolle lastDIR
                loopcount1 = 0;
-               //OSZIATOG;
                
-               //OSZI_B_LO();
                
                // MARK: speed var
                // speed var
-               if((newspeed > speed)) // beschleunigen, speedintervall positiv
+               if((newspeed > oldspeed)) // beschleunigen, speedintervall positiv
                {
                   //OSZI_B_LO();
-                  if(speed < (newspeed - speedintervall))
+                  if(speed < (newspeed + speedintervall))
                   {
-                     if((startspeed > speed) && (lokstatus & (1<<STARTBIT))) // Startimpuls
+                  
+                     //if((startspeed > speed) && (lokstatus & (1<<STARTBIT))) // Startimpuls
+                     if((lokstatus & (1<<STARTBIT))) // Startimpuls
                      {
-                        speed = startspeed;
+                        //speed = startspeed;
+                        speed = speedlookup[1];
                         lokstatus &= ~(1<<STARTBIT);
                      }
-                     else 
-                     {
-                        speed += speedintervall;
-                     }
+                     
+                     speed += speedintervall;
                   }
                   else 
                   {
                      speed = newspeed;
                   }
-                  //OSZI_B_HI();
-               }
-               else if((newspeed < speed)) // bremsen, speedintervall negativ
+   
+                     //OSZI_B_HI();
+                  }
+               else if((newspeed < oldspeed)) // bremsen, speedintervall negativ
                {
-                  //OSZI_A_LO();
-                  
-                  //if((speed > newspeed ) && ((speed + 2*speedintervall) > 0))
-                  
-                  if((speed + 2*speedintervall) > 0)
+                  if((speed > newspeed) && ((speed + 2*speedintervall) > 0))
                   {
                      speed += 2*speedintervall;
-                     
-                     if(speed < minspeed/2)
-                     {
-                        if(newspeed == 0) // Motor soll abstellen
-                        {
-                           //OSZI_A_HI();
-                           speed = 0; // Motor OFF
-                        }
-                     }
-                     
-                     
                   }
                   else 
                   {
                      speed = newspeed;
-                     
                   }
-                  //OSZI_A_HI();
+               
                }
-               displaydata[SPEED] = speed;
+                  displaydata[SPEED] = speed;
                // end speed var
                //OSZI_B_HI();
             } // loopcount1 >= speedchangetakt
@@ -1270,14 +1233,22 @@ int main (void)
             // Takt for display
              // MARK: Display
             displaycounter1++;
-            if (displaycounter1 > 0x0A)
+            if (displaycounter1 > 0x04) 
             {
                displaycounter1=0;
                LOOPLEDPORT ^= (1<<LOOPLED);
+
+               //if( TEST)
+               {
+                  
                lcd_gotoxy(17,2);
                lcd_putint(counter);
-               lcd_gotoxy(0,2);
+               lcd_gotoxy(12,1);
+               lcd_putint(speedcode);
+               lcd_gotoxy(16,1);
                lcd_putint(speed);
+               
+               }
                counter++;
                
                //               int0_init();
@@ -1349,22 +1320,22 @@ int main (void)
                   }
                   
                }
-               lcd_gotoxy(8,1);
-               lcd_puthex(speedcode);
+               //lcd_gotoxy(8,1);
+               //lcd_puthex(speedcode);
                EEPROM_savestatus &= ~0xF0;
                EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                // status sichern
                EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-               
+               /*
                lcd_gotoxy(4,2);
                lcd_putint(saveEEPROM_Addresse);
                lcd_putc(' ');
                lcd_puthex(EEPROM_savestatus);
-               
+               */
                if(saveEEPROM_Addresse > 5)
                {
-                  lcd_gotoxy(19,1);
-                  lcd_putc('N');
+                 // lcd_gotoxy(19,1);
+                 // lcd_putc('N');
                   EEPROM_Clear();
                   saveEEPROM_Addresse = 0;
                }
@@ -1372,6 +1343,8 @@ int main (void)
                
                {
                   saveEEPROM_Addresse++;
+                 // lcd_gotoxy(19,1);
+                  //lcd_putc(' ');
                }
                
 
