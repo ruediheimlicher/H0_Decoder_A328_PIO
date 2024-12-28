@@ -221,7 +221,7 @@ uint8_t speedlookuptable[10][15] =
    {0,41,42,44,47,51,56,61,67,74,82,90,99,109,120},         // 5
    {0,41,43,45,49,54,60,66,74,82,92,103,114,127,140},       // 6
    
-   {0,62,65,70,77,90,105,122,140,159,170,188,200,210,220},  // 7
+   {0,60,65,70,77,90,105,122,140,159,170,188,200,210,220},  // 7
    
    {0,42,45,50,57,65,75,87,101,116,134,153,173,196,220},    // 8
    {0,42,45,51,58,68,79,93,108,125,144,165,188,213,240}     // 9
@@ -761,15 +761,15 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            }
                            //OSZI_B_HI();
                            // MARK: speed    
-                           oldspeed = speed; // behalten
+                           oldspeed = speed; // Istwert, behalten
 
-                           newspeed = speedlookup[speedcode]; // zielwert
+                           newspeed = speedlookup[speedcode]; // solllwert
                            
                            // Startbedingung
-                                                       if((speedcode == 1) && !(lokstatus & (1<<STARTBIT))  && !(lokstatus & (1<<RUNBIT))) // noch nicht gesetzt  
+                           if((speedcode == 1) && !(lokstatus & (1<<STARTBIT))  && !(lokstatus & (1<<RUNBIT))) // noch nicht gesetzt  
                             {
-                               speed = speedlookup[1] / 8 * 7;
-                               newspeed = speedlookup[1] + STARTKICK; // kleine Zugabe
+                               speed = speedlookup[1] / 4 * 3;
+                               newspeed = speedlookup[1]; //;+ STARTKICK; // kleine Zugabe
                               //lokstatus |= (1<<STARTBIT);
                             }
                         
@@ -779,14 +779,12 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                             }
 
                            
-                           
                            speedintervall = (newspeed - oldspeed)>>2; // 4 teile
                             if((speedcode > 2) && (speedintervall > 4) )
                             {
                                speedintervall = 4;
                             }
 
-                           
                            
                            
                            if(speedcode > 0)
@@ -1268,7 +1266,7 @@ int main (void)
             loopcount0=0;
             
             // Takt for display
-             // MARK: Display
+             // MARK: LCD loop Display
             displaycounter1++;
             if (displaycounter1 > 0x0A)
             {
@@ -1277,7 +1275,12 @@ int main (void)
                lcd_gotoxy(17,2);
                lcd_putint(counter);
                lcd_gotoxy(0,2);
+               lcd_putint2(speedcode);
+               lcd_putc(' ');
+               lcd_putint(speedlookup[speedcode]);
+               lcd_putc(' ');
                lcd_putint(speed);
+
                counter++;
                
                //               int0_init();
