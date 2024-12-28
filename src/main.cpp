@@ -760,7 +760,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                                  
                            }
                            //OSZI_B_HI();
-                           // MARK: speed    
+                           // MARK: speedcode    
                            oldspeed = speed; // Istwert, behalten
 
                            newspeed = speedlookup[speedcode]; // solllwert
@@ -768,9 +768,9 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            // Startbedingung
                            if((speedcode == 1) && !(lokstatus & (1<<STARTBIT))  && !(lokstatus & (1<<RUNBIT))) // noch nicht gesetzt  
                             {
-                               speed = speedlookup[1] / 4 * 3;
+                               oldspeed = speedlookup[1] / 4 * 3;
                                newspeed = speedlookup[1]; //;+ STARTKICK; // kleine Zugabe
-                              //lokstatus |= (1<<STARTBIT);
+                              lokstatus |= (1<<STARTBIT);
                             }
                         
                            else
@@ -780,6 +780,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 
                            
                            speedintervall = (newspeed - oldspeed)>>2; // 4 teile
+
                             if((speedcode > 2) && (speedintervall > 4) )
                             {
                                speedintervall = 4;
