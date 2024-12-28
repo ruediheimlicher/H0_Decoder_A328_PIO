@@ -1275,6 +1275,22 @@ int main (void)
             {
                displaycounter1=0;
                LOOPLEDPORT ^= (1<<LOOPLED);
+               if(TESTPIN & (1<<TEST1))
+               {
+                  lcd_gotoxy(17,1);
+                  lcd_putint(counter);
+                   lcd_gotoxy(0,2);
+                  lcd_putint2(speedcode);
+                  lcd_putc(' ');
+                  lcd_putint(speedlookup[speedcode]);
+                  lcd_putc(' ');
+                  lcd_putint(speed);
+               }
+               else 
+               {
+                  lcd_gotoxy(17,2);
+                  lcd_putint(speed);
+               }
                /*
                lcd_gotoxy(17,1);
                lcd_putint(counter);
