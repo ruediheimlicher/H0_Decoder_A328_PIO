@@ -298,9 +298,12 @@ void slaveinit(void)
  	LCD_DDR |= (1<<LCD_ENABLE_PIN);	//Pin 6 von PORT B als Ausgang fuer LCD
 	LCD_DDR |= (1<<LCD_CLOCK_PIN);	//Pin 7 von PORT B als Ausgang fuer LCD
 
-   
+   /*
    TESTDDR |= (1<<TEST0); // test0
    TESTPORT |= (1<<TEST0); // HI
+   TESTDDR &= ~(1<<TEST1); // test1 INPUT
+   TESTPORT |= (1<<TEST1); // HI
+  */
    
    MOTORDDR |= (1<<MOTORA_PIN);  // Output Motor A 
    MOTORPORT |= (1<<MOTORA_PIN); // HI
@@ -346,7 +349,7 @@ void slaveinit(void)
    maxspeed = speedlookup[14];
    minspeed = speedlookup[1];
    
-   loopstatus |= (1<<FIRSTRUNBIT);
+   //loopstatus |= (1<<FIRSTRUNBIT);
 /*
    // TWI
    DDRC |= (1<<5);   //Pin 0 von PORT C als Ausgang (SCL)
@@ -411,7 +414,7 @@ ISR(INT0_vect)
       if (INT0status == 0) // neue Daten beginnen
       {
          displaystatus &= ~(1<<DISPLAY_GO); // displayfenster end
-         SYNC_HI();
+         //SYNC_HI();
          //OSZI_A_HI(); 
          INT0status |= (1<<INT0_START);
          INT0status |= (1<<INT0_WAIT); // delay, um Wert des Eingangs zum richtigen Zeitpunkt zu messen
@@ -488,7 +491,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       waitcounter++; 
       if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Status abfragen
       {
-         //OSZI_A_LO();
+         OSZI_A_LO();
          //OSZIAHI;
          INT0status &= ~(1<<INT0_WAIT);
          if (INT0status & (1<<INT0_PAKET_A))
@@ -838,7 +841,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
             } // End Paket B
           
          }
-        
+        OSZI_A_HI();
       } // waitcounter > 2
    } // if INT0_WAIT
    
@@ -937,7 +940,7 @@ int main (void)
 	_delay_ms(100);
 	lcd_cls();
    _delay_ms(100);
-	lcd_puts("H0-Decoder A328_PIO");
+	lcd_puts("H0-Decoder A328 PIO1");
 	
    
    
@@ -1088,7 +1091,7 @@ int main (void)
                
                //_delay_ms(2);
                // timer2(4);
-               sei();
+               //sei();
                
                loopstatus &= ~(1<<FIRSTRUNBIT);
    
@@ -1231,16 +1234,22 @@ int main (void)
             // Takt for display
              // MARK: Display
             displaycounter1++;
-            if (displaycounter1 > 0x02)
+            if (displaycounter1 > 0x04) 
             {
                displaycounter1=0;
                LOOPLEDPORT ^= (1<<LOOPLED);
+
+               //if( TEST)
+               {
+                  /*
                lcd_gotoxy(17,2);
                lcd_putint(counter);
                lcd_gotoxy(12,1);
                lcd_putint(speedcode);
                lcd_gotoxy(16,1);
                lcd_putint(speed);
+               */
+               }
                counter++;
                
                //               int0_init();
@@ -1318,16 +1327,16 @@ int main (void)
                EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                // status sichern
                EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-               
+               /*
                lcd_gotoxy(4,2);
                lcd_putint(saveEEPROM_Addresse);
                lcd_putc(' ');
                lcd_puthex(EEPROM_savestatus);
-               
+               */
                if(saveEEPROM_Addresse > 5)
                {
-                  lcd_gotoxy(19,1);
-                  lcd_putc('N');
+                 // lcd_gotoxy(19,1);
+                 // lcd_putc('N');
                   EEPROM_Clear();
                   saveEEPROM_Addresse = 0;
                }
@@ -1335,8 +1344,8 @@ int main (void)
                
                {
                   saveEEPROM_Addresse++;
-                  lcd_gotoxy(19,1);
-                  lcd_putc(' ');
+                 // lcd_gotoxy(19,1);
+                  //lcd_putc(' ');
                }
                
 
