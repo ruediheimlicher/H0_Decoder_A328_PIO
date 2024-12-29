@@ -1174,36 +1174,12 @@ int main (void)
             
             if(lokstatus & (1<<FUNKTIONBIT))
             {
-               /*
-                if(dimmcounter == 3)
-                {
-                LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON
-                
-                }
-                dimmcounter++;
-                if(dimmcounter > 32)
-                {
-                LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
-                dimmcounter = 0;
-                }
-                */
+
             }
             
             if(lokstatus & (1<<FUNKTIONBIT))
             {
-               /*
-                if(dimmcounter == 3)
-                {
-                LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON
-                
-                }
-                dimmcounter++;
-                if(dimmcounter > 32)
-                {
-                LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
-                dimmcounter = 0;
-                }
-                */
+
             }
             
             //continue;
@@ -1415,7 +1391,7 @@ int main (void)
                lcd_putc(' ');
                lcd_puthex(EEPROM_savestatus);
                
-               if(saveEEPROM_Addresse > 5)
+               if(saveEEPROM_Addresse > 10)
                {
                   lcd_gotoxy(19,1);
                   lcd_putc('N');
