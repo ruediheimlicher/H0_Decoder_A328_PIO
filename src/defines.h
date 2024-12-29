@@ -87,6 +87,8 @@
 #define FIRSTRUNBIT     0
 #define LOOPBIT         1
 
+#define DIRCHANGEBIT    3
+
 #define ADDRESSBIT   0
 #define STARTBIT        1 // Startimpuls
 #define DATABIT      2

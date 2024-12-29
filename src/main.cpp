@@ -127,8 +127,6 @@ uint16_t spicounter=0;
 //
 
 volatile uint8_t	INT0status=0x00;				
-volatile uint8_t	signalstatus=0x00; // status TRIT
-volatile uint8_t  pausestatus=0x00;
 
 
 volatile uint8_t   address=0x00; 
@@ -633,8 +631,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   if (lokadresseB == LOK_ADRESSE)
                   {
                      
-                     
-                     
                      // Daten uebernehmen
                      
                      lokstatus |= (1<<ADDRESSBIT);
@@ -678,7 +674,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            lokstatus |= (1<<RICHTUNGBIT); // Vorgang starten, speed auf 0 setzen
                            richtungcounter = 0;
                            //oldspeed = speed; // behalten
-                           //speed = 0;
+                           //newspeed = 0;
                            
                            lokstatus |= (1<<LOK_CHANGEBIT); // lok-change setzen
                            ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
@@ -686,25 +682,18 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         } // if !(lokstatus & (1<<RICHTUNGBIT)
                         
                         
-                        /* TODO
-                         else // repetition 0x03
-                         {
-                         richtungcounter++;
-                         if (richtungcounter > 4)
-                         {
-                         lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
-                         richtungcounter = 0;
-                         }
-                         }
-                         */
                      } // deflokdata == 0x03
                      else 
                      {  
-                        
-                        lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
-                        
-                        {
+                         if(lokstatus & (1<<RICHTUNGBIT))
+                         {
+                           //lcd_putc('$');
+                           lokstatus &= ~(1<<RICHTUNGBIT);
                            
+                         }
+                        //else
+                        {
+                           lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
                            
                            switch (deflokdata)
                            {
@@ -1257,16 +1246,21 @@ int main (void)
                {
                   //OSZI_A_LO();
                   
-                  //if((speed > newspeed ) && ((speed + 2*speedintervall) > 0))
                   
                   if((speed + 2*speedintervall) > 0)
                   {
                      speed += 2*speedintervall;
                      
+                     
                      if(speed < minspeed/2)
                      {
                         if(newspeed == 0) // Motor soll abstellen
                         {
+                           //lcd_gotoxy(10,1);
+                           //lcd_putc('&');
+                           //lcd_putint(speed);
+                           //lcd_putc('&');
+                           lokstatus &= ~(1<<RICHTUNGBIT);
                            //OSZI_A_HI();
                            speed = 0; // Motor OFF
                         }
@@ -1414,7 +1408,7 @@ int main (void)
                // status sichern
                //newspeed = 0;
                EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-               
+               //speed = 0;
                
                lcd_gotoxy(0,2);
                lcd_putint(saveEEPROM_Addresse);
