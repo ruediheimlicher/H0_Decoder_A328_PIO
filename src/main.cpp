@@ -932,10 +932,10 @@ int main (void)
 	// initialize the LCD 
 	lcd_initialize(LCD_FUNCTION_8x2, LCD_CMD_ENTRY_INC, LCD_CMD_ON);
    _delay_ms(100);
-	lcd_puts("Guten Tag\0");
-	_delay_ms(100);
-	lcd_cls();
-   _delay_ms(100);
+	//lcd_puts("Guten Tag\0");
+	//_delay_ms(100);
+	//lcd_cls();
+   //_delay_ms(100);
 	lcd_puts("H0-Decoder A328_PIO");
 	
    
@@ -953,7 +953,7 @@ int main (void)
    uint16_t firstruncount1=0;
 
 	
-	_delay_ms(200);
+	
 
    
    oldfunktion = 0x03; // 0x02
@@ -968,8 +968,10 @@ int main (void)
    lcd_puts("ADR ");
    lcd_puthex(LOK_ADRESSE);
    lcd_putc(' ');
-   //lcd_hextobin(LOK_ADRESSE);
+   lcd_hextobin(LOK_ADRESSE);
    
+   _delay_ms(400);
+   lcd_cls();
    //lcd_gotoxy(0,2);
    //lcd_puts(" adrIN");
 
@@ -993,7 +995,6 @@ int main (void)
    */
    lcd_gotoxy(0,3);
 
-
    // naechste Adresse fuer save Status
    for (uint16_t loc = 0;loc < MAX_EEPROM; loc++)
    {
@@ -1011,23 +1012,59 @@ int main (void)
       }
    }
    
-   lcd_gotoxy(8,3);
+   lcd_gotoxy(0,0);
+   
    if(saveEEPROM_Addresse)
    {
-      lcd_putc('*');
+      lcd_puts("last ");
+      lcd_putc('A');
+      lcd_putc(':');
+      lcd_putint(saveEEPROM_Addresse);
+      lcd_putc(' ');
+      lcd_putc('S');
+      lcd_putc(':');
       EEPROM_lastsavedstatus = EEPROM_Read(saveEEPROM_Addresse - 1);
       lcd_puthex(EEPROM_lastsavedstatus); // letzter gespeicherter Stetus
+    // last data
+   
+      lcd_gotoxy(0,1);
+      lcd_putc('L');
+      lcd_putc(':');
+      uint8_t lastlampecode = (EEPROM_lastsavedstatus & 0x03) ;
+      lcd_puthex(lastlampecode);
+      lcd_putc(' ');
+      lcd_putc('D');
+      lcd_putc(':');
+      uint8_t lastdircode = (EEPROM_lastsavedstatus & 0x0C) >> 2;
+      //lcd_putc('*');
+      lcd_puthex(lastdircode);
+      /*
+      lampe A: bit 1
+      lampe B: bit 0
+
+      motor A: bit 2 lastdircode = 1
+      motor B: bit 3 lastdircode = 2
+      */
+      // speed
+      uint8_t lastspeedcode = (EEPROM_lastsavedstatus & 0xF0) >> 4;
+      lcd_putc(' ');
+      lcd_putc('c');
+      lcd_putc(':');
+      lcd_putint2(lastspeedcode);
+   
+      lcd_putc(' ');
+      lcd_putc('v');
+      lcd_putc(':');
+      lcd_putint(speedlookup[lastspeedcode]);
    }
    else
    {
-      //lcd_putc('*');
-      //lcd_puts("firs");
+      lcd_putc('*');
+      lcd_puts("first");
    }
-   lcd_putc('*');
-   lcd_putint(saveEEPROM_Addresse);
-   lcd_gotoxy(8,2);
-   uint8_t lastdircode = (EEPROM_lastsavedstatus & 0x0C) >> 2;
-   lcd_puthex(lastdircode);
+
+  
+
 
     
     /*
@@ -1314,9 +1351,11 @@ int main (void)
             
             if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
             {
-               
+               EEPROM_savestatus &= ~0xF0;
+               EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                if(pwmpin == MOTORA_PIN)
                {
+                  
                   pwmpin = MOTORB_PIN;
                   richtungpin = MOTORA_PIN;
                   EEPROM_savestatus &= ~(1<<MOTORA_PIN);
@@ -1357,7 +1396,6 @@ int main (void)
                      LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
                      EEPROM_savestatus |= (1<<LAMPEB_PIN);
                      EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
-
                   }
                   else 
                   {
@@ -1371,14 +1409,14 @@ int main (void)
                }
                //lcd_gotoxy(8,1);
                //lcd_puthex(speedcode);
-               EEPROM_savestatus &= ~0xF0;
-               EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
+               //EEPROM_savestatus &= ~0xF0;
+               //EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                // status sichern
-               newspeed = 0;
+               //newspeed = 0;
                EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                
                
-               lcd_gotoxy(12,2);
+               lcd_gotoxy(0,2);
                lcd_putint(saveEEPROM_Addresse);
                lcd_putc(' ');
                lcd_puthex(EEPROM_savestatus);
