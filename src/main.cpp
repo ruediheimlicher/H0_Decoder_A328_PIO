@@ -136,6 +136,7 @@ volatile uint8_t   data=0x00;
 
 volatile uint16_t  saveEEPROM_Addresse = 0;
 volatile uint8_t   EEPROM_savestatus=0x00;   
+volatile uint8_t  EEPROM_lastsavedstatus = 0;
 
 volatile uint16_t MEMBuffer = 0;
 
@@ -1014,18 +1015,19 @@ int main (void)
    if(saveEEPROM_Addresse)
    {
       lcd_putc('*');
-      uint8_t lastsaved = EEPROM_Read(saveEEPROM_Addresse - 1);
-      lcd_puthex(lastsaved); // letzter gespeicherter Stetus
+      EEPROM_lastsavedstatus = EEPROM_Read(saveEEPROM_Addresse - 1);
+      lcd_puthex(EEPROM_lastsavedstatus); // letzter gespeicherter Stetus
    }
    else
    {
-      lcd_putc('*');
-      lcd_puts("firs");
+      //lcd_putc('*');
+      //lcd_puts("firs");
    }
    lcd_putc('*');
    lcd_putint(saveEEPROM_Addresse);
-   lcd_gotoxy(12,3);
-
+   lcd_gotoxy(8,2);
+   uint8_t lastdircode = (EEPROM_lastsavedstatus & 0x0C) >> 2;
+   lcd_puthex(lastdircode);
 
     
     /*
@@ -1070,15 +1072,10 @@ int main (void)
          firstruncount0++;
          if (firstruncount0>=0x8A)
          {
-            //OSZI_B_LO();
-            //OSZI_A_LO();
-            //LOOPLEDPORT ^= (1<<LOOPLED); 
-            
+
             firstruncount0=0;
             
-            //LOOPLEDPORT ^= (1<<LOOPLED); 
-            
-            
+
             // Takt for display
             firstruncount1++;
             
@@ -1283,7 +1280,7 @@ int main (void)
                   lcd_putint2(speedcode);
                   lcd_putc(' ');
                   lcd_putint(speedlookup[speedcode]);
-                  lcd_putc(' ');
+                  lcd_gotoxy(17,2);
                   lcd_putint(speed);
                }
                else 
@@ -1377,7 +1374,9 @@ int main (void)
                EEPROM_savestatus &= ~0xF0;
                EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                // status sichern
+               newspeed = 0;
                EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+               
                
                lcd_gotoxy(12,2);
                lcd_putint(saveEEPROM_Addresse);
