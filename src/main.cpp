@@ -686,25 +686,14 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         } // if !(lokstatus & (1<<RICHTUNGBIT)
                         
                         
-                        /* TODO
-                         else // repetition 0x03
-                         {
-                         richtungcounter++;
-                         if (richtungcounter > 4)
-                         {
-                         lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
-                         richtungcounter = 0;
-                         }
-                         }
-                         */
                      } // deflokdata == 0x03
                      else 
                      {  
                         
                         lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
                         
+                        
                         {
-                           
                            
                            switch (deflokdata)
                            {
