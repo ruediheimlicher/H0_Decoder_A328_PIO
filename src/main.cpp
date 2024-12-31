@@ -1204,7 +1204,8 @@ int main (void)
             {
                
 
-            // von refreshtakt
+            // ************ von refreshtakt
+            
             if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
             {
                EEPROM_savestatus &= ~0xF0;
@@ -1292,8 +1293,7 @@ int main (void)
             } // if changebit
 
 
-
-               // end rereshtakt
+             // ********* end rereshtakt
 
                lcdcounter++;
                //LOOPLEDPORT ^= (1<<LOOPLED); // Kontrolle lastDIR
