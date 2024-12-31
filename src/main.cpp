@@ -682,7 +682,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            //speed = 0;
                            
                            // 241231 Dirwechsel ausschalten
-                           //lokstatus |= (1<<LOK_CHANGEBIT); // lok-change setzen
+                           lokstatus |= (1<<LOK_CHANGEBIT); // lok-change setzen
                            ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
                            
                         } // if !(lokstatus & (1<<RICHTUNGBIT)
@@ -1207,7 +1207,8 @@ int main (void)
                
 
             // ************ von refreshtakt
-
+// xxx
+/*
             if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
             {
                EEPROM_savestatus &= ~0xF0;
@@ -1293,7 +1294,8 @@ int main (void)
 
                
             } // if changebit
-
+*/
+// xxx
 
              // ********* end rereshtakt
 
@@ -1343,10 +1345,105 @@ int main (void)
                         {
                            lokstatus &= ~(1<<RICHTUNGBIT);
  
-                           OSZI_A_HI();
-                           OSZI_B_LO();
+                           
+                           
+
+       // 333
+
+                           if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
+                           {
+                              OSZI_B_LO();
+                              EEPROM_savestatus &= ~0xF0;
+                              EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
+                              if(pwmpin == MOTORA_PIN)
+                              {
+                                 pwmpin = MOTORB_PIN;
+                                 richtungpin = MOTORA_PIN;
+                                 EEPROM_savestatus &= ~(1<<MOTORA_PIN);
+                                 EEPROM_savestatus |= (1<<MOTORB_PIN);
+                                 
+                                 if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
+                                 {
+                                    
+                                    LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                                    LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A ON
+                                    EEPROM_savestatus |= (1<<LAMPEA_PIN);
+                                    EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
+                                 }
+                                 else // funktion ist 0, ausschalten
+                                 {
+                                    // beide lampen OFF
+                                    LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                                    LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                                    EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
+                                    EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
+                                 }
+                              }
+                              else // auch default
+                              {
+                                 pwmpin = MOTORA_PIN;
+                                 richtungpin = MOTORB_PIN;
+                                 EEPROM_savestatus &= ~(1<<MOTORB_PIN);
+                                 EEPROM_savestatus |= (1<<MOTORA_PIN);
+
+                                 if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
+                                 {
+                                    LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B ON
+                                    LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                                    EEPROM_savestatus |= (1<<LAMPEB_PIN);
+                                    EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
+                                 }
+                                 else // funktion ist 0, ausschalten
+                                 {
+                                    // beide lampen OFF
+                                    LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                                    LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                                    EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
+                                    EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
+                                 }
+                                 
+                              }
+                              OSZI_B_HI();
+                              
+                              //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+                              OSZI_B_LO();
+                              /*
+                              lcd_gotoxy(0,2);
+                              lcd_putint(saveEEPROM_Addresse);
+                              lcd_putc(' ');
+                              lcd_puthex(EEPROM_savestatus);
+                              */
+                              if(saveEEPROM_Addresse > 5)
+                              {
+                                 lcd_gotoxy(19,1);
+                                 lcd_putc('N');
+                                 EEPROM_Clear();
+                                 saveEEPROM_Addresse = 0;
+                              }
+                              else 
+                              
+                              {
+                               //  lcd_gotoxy(19,1);
+                               //  lcd_putc(' ');
+                                 saveEEPROM_Addresse++;
+                              }
+                              
+
+                              MOTORPORT |= (1<<richtungpin); // Richtung setzen
+                              
+                              lokstatus &= ~(1<<LOK_CHANGEBIT);
+
+                              OSZI_B_HI();
+                              
+                           } // if changebit
+
+    // 333 end
+
                            EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-                           OSZI_B_HI();
+                           
+
+
+                           OSZI_A_HI();
                            speed = 0; // Motor OFF
                         }
                      }
