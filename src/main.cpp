@@ -616,7 +616,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
             }
             else if (INT0status & (1<<INT0_PAKET_B)) // zweites Paket, Werte testen
             {
-               OSZI_B_LO();
+               //OSZI_B_LO();
                //SYNC_LO();
                displaystatus |= (1<<DISPLAY_GO);
                // // Displayfenster begin
@@ -700,7 +700,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         }
                         else // speed-Angabe
                         {
-                           lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
+                           //lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
 
                            switch (deflokdata)
                            {
@@ -829,7 +829,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   //               TESTPORT |= (1<<TEST2);
                }
                //SYNC_HI();
-               OSZI_B_HI();
+               //OSZI_B_HI();
             } // End Paket B
           
          }
@@ -1341,8 +1341,12 @@ int main (void)
                      {
                         if(newspeed == 0) // Motor soll abstellen
                         {
+                           lokstatus &= ~(1<<RICHTUNGBIT);
  
                            OSZI_A_HI();
+                           OSZI_B_LO();
+                           EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+                           OSZI_B_HI();
                            speed = 0; // Motor OFF
                         }
                      }
@@ -1432,7 +1436,7 @@ int main (void)
              
             //OSZI_B_HI();
          }  // loopcount0>=refreshtakt
-         OSZI_B_HI();
+         //OSZI_B_HI();
          
       }
    }//while
