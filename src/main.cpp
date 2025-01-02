@@ -314,7 +314,7 @@ void slaveinit(void)
    
    LAMPEDDR |= (1<<LAMPEA_PIN);  // Lampe A
    LAMPEPORT &= ~(1<<LAMPEA_PIN); // LO
-    
+
    LAMPEDDR |= (1<<LAMPEB_PIN);  // Lampe B
    LAMPEPORT &= ~(1<<LAMPEB_PIN); // LO
    /*
@@ -647,12 +647,15 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      if (deffunktion)
                      {
                         lokstatus |= (1<<FUNKTIONBIT);
+                        OSZI_A_LO();
+
                         ledstatus |= (1<<LED_CHANGEBIT); // change setzen
                         
                      }
                      else
                      {
                         lokstatus &= ~(1<<FUNKTIONBIT);
+                        OSZI_A_HI();
                         ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
                         
                      }
@@ -681,10 +684,9 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            //oldspeed = speed; // behalten
                            //speed = 0;
                            
-                           // 241231 Dirwechsel ausschalten
                            lokstatus |= (1<<LOK_CHANGEBIT); // lok-change setzen
-                           ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
-                           
+                           //ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
+                           OSZI_B_LO();
                         } // if !(lokstatus & (1<<RICHTUNGBIT)
                         
                         
@@ -1177,26 +1179,22 @@ int main (void)
                
             } //  if((displaystatus & (1<<DISPLAY_GO)
             
-            
-            
-            if(lokstatus & (1<<FUNKTIONBIT))
+            /*
+            if(ledstatus & (1<<LED_CHANGEBIT))
             {
-               /*
-                if(dimmcounter == 3)
-                {
-                LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON
-                
-                }
-                dimmcounter++;
-                if(dimmcounter > 32)
-                {
-                LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
-                dimmcounter = 0;
-                }
-                */
+               if(lokstatus & (1<<FUNKTIONBIT) )
+               {
+                  LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON
+                  LAMPEPORT &= ~(1<<ledoffpin); // Lampe-PWM  OFF
+               }
+               else
+               {
+                  LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
+                  //LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  OFF
+               }
+               ledstatus &= ~(1<<LED_CHANGEBIT);
             }
-            
-
+            */
             
             //continue;
             
@@ -1207,8 +1205,8 @@ int main (void)
                
 
             // ************ von refreshtakt
-// xxx
-/*
+            // xxx
+         /*
             if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
             {
                EEPROM_savestatus &= ~0xF0;
@@ -1348,33 +1346,35 @@ int main (void)
                            
                            
 
-       // 333
+                                    // 333
 
                            if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
                            {
-                              OSZI_B_LO();
+                              //OSZI_B_LO();
                               EEPROM_savestatus &= ~0xF0;
                               EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                               if(pwmpin == MOTORA_PIN)
                               {
                                  pwmpin = MOTORB_PIN;
                                  richtungpin = MOTORA_PIN;
+                                 ledonpin = LAMPEB_PIN;
+                                 ledoffpin = LAMPEA_PIN;
                                  EEPROM_savestatus &= ~(1<<MOTORA_PIN);
                                  EEPROM_savestatus |= (1<<MOTORB_PIN);
                                  
                                  if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
                                  {
                                     
-                                    LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                                    LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A ON
+                                    //LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                                    //LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A ON
                                     EEPROM_savestatus |= (1<<LAMPEA_PIN);
                                     EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
                                  }
                                  else // funktion ist 0, ausschalten
                                  {
                                     // beide lampen OFF
-                                    LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                                    LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                                    //LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                                    //LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
                                     EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
                                     EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                                  }
@@ -1383,30 +1383,33 @@ int main (void)
                               {
                                  pwmpin = MOTORA_PIN;
                                  richtungpin = MOTORB_PIN;
+                                 ledonpin = LAMPEA_PIN;
+                                 ledoffpin = LAMPEB_PIN;
                                  EEPROM_savestatus &= ~(1<<MOTORB_PIN);
                                  EEPROM_savestatus |= (1<<MOTORA_PIN);
 
                                  if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
                                  {
-                                    LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B ON
-                                    LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                                    //LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B ON
+                                    //LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
                                     EEPROM_savestatus |= (1<<LAMPEB_PIN);
                                     EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                                  }
                                  else // funktion ist 0, ausschalten
                                  {
                                     // beide lampen OFF
-                                    LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                                    LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                                    //LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                                    //LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
                                     EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
                                     EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                                  }
                                  
                               }
-                              OSZI_B_HI();
+                              //OSZI_B_HI();
                               
-                              //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-                              OSZI_B_LO();
+                              
+                              EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+                              //OSZI_B_LO();
                               /*
                               lcd_gotoxy(0,2);
                               lcd_putint(saveEEPROM_Addresse);
@@ -1426,6 +1429,7 @@ int main (void)
                                //  lcd_gotoxy(19,1);
                                //  lcd_putc(' ');
                                  saveEEPROM_Addresse++;
+                                 
                               }
                               
 
@@ -1433,20 +1437,42 @@ int main (void)
                               
                               lokstatus &= ~(1<<LOK_CHANGEBIT);
 
-                              OSZI_B_HI();
+                              //OSZI_B_HI();
                               
                            } // if changebit
 
-    // 333 end
+                                                      // 333 end
+                           
+                           /*
+                           // Lampen einstellen
+                           if(ledstatus & (1<<LED_CHANGEBIT))
+                           {
+                             
+                              if(lokstatus & (1<<FUNKTIONBIT))
+                              {
+                                 
+                                 LAMPEPORT |= (1<<ledonpin); // Lampe  ON
+                                 LAMPEPORT &= ~(1<<ledoffpin); // // Lampe  OFF
+                                 
+                              }
+                              else
+                              {
+                                 // beide lampen OFF
+                                 OSZI_A_HI();
+                                 LAMPEPORT &= ~(1<<ledonpin); // // eingeschaltete Lampe  OFF
+                                 
+                              }
+                              ledstatus &= ~(1<<LED_CHANGEBIT);
+                           }
+                           */
 
-                           EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                            
 
 
                            OSZI_A_HI();
                            speed = 0; // Motor OFF
-                        }
-                     }
+                        } // speed == 0
+                     } // speen <= minspeed/2
                      
                      
                   }
@@ -1457,6 +1483,42 @@ int main (void)
                   }
                   //OSZI_A_HI();
                }
+//77
+               // Lampen einstellen
+                           if(ledstatus & (1<<LED_CHANGEBIT))
+                           {
+                               if(richtungpin == MOTORA_PIN)
+                              {
+                                 ledonpin = LAMPEB_PIN;
+                                 ledoffpin = LAMPEA_PIN;
+                              }
+                              else 
+                              {
+                                 ledonpin = LAMPEA_PIN;
+                                 ledoffpin = LAMPEB_PIN;
+                              }
+                              OSZI_B_LO();
+                              if(lokstatus & (1<<FUNKTIONBIT))
+                              {
+                                 
+                                 LAMPEPORT |= (1<<ledonpin); // Lampe  ON
+                                 LAMPEPORT &= ~(1<<ledoffpin); // // Lampe  OFF
+                                 
+                              }
+                              else
+                              {
+                                 // beide lampen OFF
+                                 OSZI_A_HI();
+                                 LAMPEPORT &= ~(1<<ledonpin); // // eingeschaltete Lampe  OFF
+                                 
+                              }
+                              OSZI_B_HI();
+                              ledstatus &= ~(1<<LED_CHANGEBIT);
+                           }
+
+
+//77
+
                displaydata[SPEED] = speed;
                // end speed var
                //OSZI_B_HI();
@@ -1500,6 +1562,7 @@ int main (void)
             {
                displaycounter1=0;
                LOOPLEDPORT ^= (1<<LOOPLED);
+               /*
                if(TESTPIN & (1<<TEST1))
                {
                   lcd_gotoxy(17,1);
@@ -1513,10 +1576,10 @@ int main (void)
                }
                else 
                {
-                  lcd_gotoxy(17,2);
-                  lcd_putint(speed);
+                 // lcd_gotoxy(17,2);
+                 // lcd_putint(speed);
                }
-  
+               */
                counter++;
                
                //               int0_init();
