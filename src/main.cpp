@@ -1059,36 +1059,12 @@ int main (void)
       lcd_puts("first");
    }
 
+   ledstatus |= (1<<LED_CHANGEBIT);
   
 
 
     
-    /*
-   if(saveEEPROM_Addresse)
-   {
-      lcd_putc('*');
-      uint8_t lastsaved = EEPROM_Read(saveEEPROM_Addresse - 1);
-      lcd_puthex(lastsaved); // letzter gespeicherter Stetus
-   }
-   else
-   {
-      lcd_putc('*');
-      lcd_puts("first");
-   }
-   */
-
-    /*
-   for (uint16_t loc = MAX_EEPROM-1;loc > MAX_EEPROM - 3 ; loc--)
-   {
-     // if(loc < 4)
-      {
-         uint8_t locdata = EEPROM_Read(loc);
-         lcd_puthex(locdata);
-         lcd_putc(' ');
-
-      }
-   }
-   */
+    
    sei();
    
 	while (1)
@@ -1405,7 +1381,7 @@ int main (void)
                               }
                               OSZI_B_HI();
                               
-                              //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+                              EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                               OSZI_B_LO();
                               /*
                               lcd_gotoxy(0,2);
@@ -1439,7 +1415,7 @@ int main (void)
 
     // 333 end
 
-                           EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+                           //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                            
 
 
