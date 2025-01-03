@@ -347,7 +347,7 @@ void slaveinit(void)
    maxspeed = speedlookup[14];
    minspeed = speedlookup[1];
    
-   //loopstatus |= (1<<FIRSTRUNBIT);
+   loopstatus |= (1<<FIRSTRUNBIT);
 /*
    // TWI
    DDRC |= (1<<5);   //Pin 0 von PORT C als Ausgang (SCL)
@@ -411,8 +411,8 @@ ISR(INT0_vect)
       
       if (INT0status == 0) // neue Daten beginnen
       {
-         displaystatus &= ~(1<<DISPLAY_GO); // displayfenster end
-         SYNC_HI();
+         //displaystatus &= ~(1<<DISPLAY_GO); // displayfenster end
+         //SYNC_HI();
          //OSZI_A_HI(); 
          INT0status |= (1<<INT0_START);
          INT0status |= (1<<INT0_WAIT); // delay, um Wert des Eingangs zum richtigen Zeitpunkt zu messen
@@ -476,18 +476,13 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
    }
    //OSZI_B_HI();
    
-   if (displayfenstercounter > 8)
-   {
-      //displayfensterfunktion();
-      //displayfenstercounter=0;
-   }
    
    
    // MARK: TIMER0 TIMER0_COMPA INT0
    if (INT0status & (1<<INT0_WAIT))
    {
       waitcounter++; 
-      if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Status abfragen
+      if (waitcounter > 2)// Impulsdauer > minimum, nach einer gewissen Zeit den Status abfragen
       {
          //OSZI_A_LO();
          //OSZIAHI;
@@ -618,13 +613,10 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
             {
                //OSZI_B_LO();
                //SYNC_LO();
-               displaystatus |= (1<<DISPLAY_GO);
+               //displaystatus |= (1<<DISPLAY_GO);
                // // Displayfenster begin
-               if(displayfenstercounter++ > 4)
-               {
-                  displaystatus |= (1<<DISPLAY_GO);
-                  displayfenstercounter=0;
-               }
+
+               
                //displayfenstercounter = MAXFENSTERCOUNT;
                
                // MARK: EQUAL
@@ -1061,7 +1053,7 @@ int main (void)
 
   
    ledstatus |= (1<<LED_CHANGEBIT);
-
+   speed = minspeed / 4 * 3;
     
     /*
    if(saveEEPROM_Addresse)
