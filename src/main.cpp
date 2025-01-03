@@ -1063,6 +1063,9 @@ int main (void)
 
 
     
+    speed = minspeed;
+
+
     /*
    if(saveEEPROM_Addresse)
    {
@@ -1405,7 +1408,7 @@ int main (void)
                               }
                               OSZI_B_HI();
                               
-                              //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+                              EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                               OSZI_B_LO();
                               /*
                               lcd_gotoxy(0,2);
@@ -1437,9 +1440,9 @@ int main (void)
                               
                            } // if changebit
 
-    // 333 end
+                                 // 333 end
 
-                           EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+                           //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                            
 
 
@@ -1470,7 +1473,7 @@ int main (void)
                        //ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
     
 
-                     EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+                     //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                    }
 
 
