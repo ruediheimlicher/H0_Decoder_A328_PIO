@@ -694,9 +694,9 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 
                         if(lokstatus & (1<<RICHTUNGBIT)) // Richtungswechsel noch im Gang
                         {
-                              speedcode = 0;
-                              //lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
-                              OSZI_A_LO();
+                              speedcode = 0; // Stillstand einleiten
+                              lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
+                              //OSZI_A_LO();
                         }
                         else // speed-Angabe
                         {
@@ -760,8 +760,11 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            }
 
                         }
+
                         //OSZI_B_HI();
-                        // MARK: speedcode    
+
+                        // MARK: speedcode   
+
                         oldspeed = speed; // Istwert, behalten
                         
                         newspeed = speedlookup[speedcode]; // solllwert
@@ -771,7 +774,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            {
                               oldspeed = speedlookup[1] / 4 * 3;
                               newspeed = speedlookup[1]; //;+ STARTKICK; // kleine Zugabe
-                           lokstatus |= (1<<STARTBIT);
+                              lokstatus |= (1<<STARTBIT);
                            }
                         else
                            {
@@ -1192,8 +1195,8 @@ int main (void)
                 if(dimmcounter == 3)
                 {
                 LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON
-                
-                }
+               
+            }
                 dimmcounter++;
                 if(dimmcounter > 32)
                 {
@@ -1211,7 +1214,7 @@ int main (void)
 
             if (loopcount1 >= speedchangetakt) // 150
             {
-               
+            
 
             // ************ von refreshtakt
 // xxx
@@ -1355,7 +1358,7 @@ int main (void)
                            
                            
 
-       // 333
+                              // 333
 
                            if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
                            {
@@ -1448,10 +1451,7 @@ int main (void)
                               
                            } // if changebit
 
-                                 // 333 end
-
-                           //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-                           
+                             
 
 
                            //OSZI_A_HI();
@@ -1470,7 +1470,32 @@ int main (void)
                      
                   }
                   //OSZI_A_HI();
-               } // newspeed y speed
+               } // newspeed < speed
+               /*
+               else if ((speed == 0) && (lokstatus & (1<<LOK_CHANGEBIT)) && (lokstatus & (1<<RICHTUNGBIT)))
+               {
+                    if(pwmpin == MOTORA_PIN)
+                              {
+                                 pwmpin = MOTORB_PIN;
+                                 richtungpin = MOTORA_PIN;
+                                 //EEPROM_savestatus &= ~(1<<MOTORA_PIN);
+                                 //EEPROM_savestatus |= (1<<MOTORB_PIN);
+                                 
+                                 
+                              }
+                              else // auch default
+                              {
+                                 pwmpin = MOTORA_PIN;
+                                 richtungpin = MOTORB_PIN;
+                                 //EEPROM_savestatus &= ~(1<<MOTORB_PIN);
+                                 //EEPROM_savestatus |= (1<<MOTORA_PIN);
+                                 
+                                 
+                              }
+                              lokstatus &= ~(1<<LOK_CHANGEBIT);
+
+               }
+               */
 
                                                       // 250103 lampen
                               // Lampen einstellen
