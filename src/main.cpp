@@ -1471,7 +1471,7 @@ int main (void)
                                  ledonpin = LAMPEA_PIN;
                                  ledoffpin = LAMPEB_PIN;
                               }
-                              OSZI_B_LO();
+                              //OSZI_B_LO();
                               if(lokstatus & (1<<FUNKTIONBIT))
                               {
                                  
@@ -1482,11 +1482,11 @@ int main (void)
                               else
                               {
                                  // beide lampen OFF
-                                 OSZI_A_HI();
+                                 //OSZI_A_HI();
                                  LAMPEPORT &= ~(1<<ledonpin); // // eingeschaltete Lampe  OFF
                                  
                               }
-                              OSZI_B_HI();
+                              //OSZI_B_HI();
                               ledstatus &= ~(1<<LED_CHANGEBIT);
                            }
 
