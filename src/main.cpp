@@ -708,7 +708,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         {
                               speedcode = 0;
                               //lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
-                              OSZI_A_LO();
+                              //OSZI_A_LO();
                         }
                         else // speed-Angabe
                         {
@@ -1359,7 +1359,7 @@ int main (void)
                      {
                         if(newspeed == 0) // Motor soll abstellen
                         {
-                           OSZI_A_LO();
+                           //OSZI_A_LO();
                            lokstatus &= ~(1<<RICHTUNGBIT);
  
                            
@@ -1461,7 +1461,7 @@ int main (void)
                            
 
 
-                           OSZI_A_HI();
+                           //OSZI_A_HI();
                            speed = 0; // Motor OFF
                         }
                      }
