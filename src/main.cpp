@@ -1061,41 +1061,14 @@ int main (void)
    {
       lcd_putc('*');
       lcd_puts("first");
+      lcd_putc('*');
    }
 
-   
-   
+  
+
 
     
-    //speed = minspeed;
-   ledstatus |= (1<<LED_CHANGEBIT);
-
-    /*
-   if(saveEEPROM_Addresse)
-   {
-      lcd_putc('*');
-      uint8_t lastsaved = EEPROM_Read(saveEEPROM_Addresse - 1);
-      lcd_puthex(lastsaved); // letzter gespeicherter Stetus
-   }
-   else
-   {
-      lcd_putc('*');
-      lcd_puts("first");
-   }
-   */
-
-    /*
-   for (uint16_t loc = MAX_EEPROM-1;loc > MAX_EEPROM - 3 ; loc--)
-   {
-     // if(loc < 4)
-      {
-         uint8_t locdata = EEPROM_Read(loc);
-         lcd_puthex(locdata);
-         lcd_putc(' ');
-
-      }
-   }
-   */
+    
    sei();
    
 	while (1)
@@ -1162,8 +1135,8 @@ int main (void)
                if (SHOWDISPLAY)
                {
                   //OSZI_B_LO();
-                  //char_x=100;
-                  //char_y = 1;
+                  char_x=100;
+                  char_y = 1;
                   //OSZI_B_HI();
                   
                   //display_write_int(lcdcounter,1);
@@ -1355,7 +1328,7 @@ int main (void)
                            
                            
 
-       // 333
+                              // 333
 
                            if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
                            {
@@ -1559,24 +1532,13 @@ int main (void)
             {
                displaycounter1=0;
                LOOPLEDPORT ^= (1<<LOOPLED);
-               if(TESTPIN & (1<<TEST1))
-               {
-                  lcd_gotoxy(17,1);
-                  lcd_putint(counter);
-                  lcd_gotoxy(0,2);
-                  lcd_putint2(speedcode);
-                  lcd_putc(' ');
-                  lcd_putint(speedlookup[speedcode]);
-                  lcd_gotoxy(17,2);
-                  lcd_putint(speed);
-               }
-               else 
+               
                {
                   lcd_gotoxy(17,2);
                   lcd_putint(speed);
                }
   
-               counter++;
+               //counter++;
                
                //               int0_init();
                //               sei();
