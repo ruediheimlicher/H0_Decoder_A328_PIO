@@ -280,6 +280,16 @@ void slaveinit(void)
    
    OSZIPORT |= (1<<OSZI_PULS_B);   //Pin 6 von PORT D als Ausgang fuer OSZI A
    OSZIDDR |= (1<<OSZI_PULS_B);   //Pin 7 von PORT D als Ausgang fuer SOSZI B
+   
+   /*
+   PROTODDR |= (1<<PROTO_A);
+   PROTOPORT |= (1<<PROTO_A);
+   PROTODDR |= (1<<PROTO_B);
+   PROTOPORT |= (1<<PROTO_B);
+  */
+   
+   
+   
    //OSZIPORT |= (1<<SYNC);   //Pin 6 von PORT D als Ausgang fuer OSZI A
    //OSZIDDR |= (1<<SYNC);   //Pin 7 von PORT D als Ausgang fuer SOSZI B
 
@@ -646,9 +656,10 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      
                      if (deffunktion)
                      {
+                        //PROTO_B_LO();
                         lokstatus |= (1<<FUNKTIONBIT);
                         ledstatus |= (1<<LED_CHANGEBIT); // change setzen
-                        
+                        //_B_HI();
                      }
                      else
                      {
@@ -674,6 +685,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      // Richtung
                      if (deflokdata == 0x03) // Wert 1, > Richtung togglen
                      {
+
                         if (!(lokstatus & (1<<RICHTUNGBIT))) // Start Richtungswechsel
                         {
                            lokstatus |= (1<<RICHTUNGBIT); // Vorgang starten, speed auf 0 setzen
@@ -683,7 +695,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            
                            // 241231 Dirwechsel ausschalten
                            lokstatus |= (1<<LOK_CHANGEBIT); // lok-change setzen
-                           ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
+                           //ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
                            
                         } // if !(lokstatus & (1<<RICHTUNGBIT)
                         
@@ -771,7 +783,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            {
                               oldspeed = speedlookup[1] / 4 * 3;
                               newspeed = speedlookup[1]; //;+ STARTKICK; // kleine Zugabe
-                           lokstatus |= (1<<STARTBIT);
+                              lokstatus |= (1<<STARTBIT);
                            }
                         else
                            {
@@ -1002,6 +1014,10 @@ int main (void)
          lcd_putc(' ');
          lcd_puthex(locdata);
          lcd_putc(' ');
+         if(loc)
+         {
+            lcd_puthex(EEPROM_Read(loc-1));
+         }
          saveEEPROM_Addresse = loc;
          break;
 
@@ -1204,13 +1220,13 @@ int main (void)
 
             if (loopcount1 >= speedchangetakt) // 150
             {
-               
+               //PROTO_B_LO();
 
-            // ************ von refreshtakt
-// xxx
-/*
-            if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
-            {
+                        // ************ von refreshtakt
+                  // xxx
+                  /*
+               if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
+               {
                EEPROM_savestatus &= ~0xF0;
                EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                if(pwmpin == MOTORA_PIN)
@@ -1293,11 +1309,11 @@ int main (void)
 
 
                
-            } // if changebit
-*/
-// xxx
+               } // if changebit
+               */
+               // xxx
 
-             // ********* end rereshtakt
+             // ********* end refreshtakt
 
                lcdcounter++;
                //LOOPLEDPORT ^= (1<<LOOPLED); // Kontrolle lastDIR
@@ -1343,16 +1359,17 @@ int main (void)
                      {
                         if(newspeed == 0) // Motor soll abstellen
                         {
+                           OSZI_A_LO();
                            lokstatus &= ~(1<<RICHTUNGBIT);
  
                            
                            
 
-       // 333
+                              // 333
 
                            if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
                            {
-                              OSZI_B_LO();
+                              //OSZI_B_LO();
                               EEPROM_savestatus &= ~0xF0;
                               EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                               if(pwmpin == MOTORA_PIN)
@@ -1365,16 +1382,16 @@ int main (void)
                                  if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
                                  {
                                     
-                                    LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                                    LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A ON
+                                    //LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                                    //LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A ON
                                     EEPROM_savestatus |= (1<<LAMPEA_PIN);
                                     EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
                                  }
                                  else // funktion ist 0, ausschalten
                                  {
                                     // beide lampen OFF
-                                    LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                                    LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                                    //LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                                    //LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
                                     EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
                                     EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                                  }
@@ -1388,25 +1405,26 @@ int main (void)
 
                                  if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
                                  {
-                                    LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B ON
-                                    LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                                    //LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B ON
+                                    //LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
                                     EEPROM_savestatus |= (1<<LAMPEB_PIN);
                                     EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                                  }
                                  else // funktion ist 0, ausschalten
                                  {
                                     // beide lampen OFF
-                                    LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                                    LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                                    //LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                                    //LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
                                     EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
                                     EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                                  }
                                  
                               }
-                              OSZI_B_HI();
+                              //PROTO_A_LO();
                               
                               //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-                              OSZI_B_LO();
+
+                              //
                               /*
                               lcd_gotoxy(0,2);
                               lcd_putint(saveEEPROM_Addresse);
@@ -1433,13 +1451,13 @@ int main (void)
                               
                               lokstatus &= ~(1<<LOK_CHANGEBIT);
 
-                              OSZI_B_HI();
+                              //PROTO_A_HI();
                               
                            } // if changebit
 
-    // 333 end
+                              // 333 end
 
-                           EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+                           //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                            
 
 
@@ -1457,6 +1475,46 @@ int main (void)
                   }
                   //OSZI_A_HI();
                }
+                                 //77
+               // Lampen einstellen
+                           if(ledstatus & (1<<LED_CHANGEBIT))
+                           {
+                               if(richtungpin == MOTORA_PIN)
+                              {
+                                 ledonpin = LAMPEB_PIN;
+                                 ledoffpin = LAMPEA_PIN;
+                              }
+                              else 
+                              {
+                                 ledonpin = LAMPEA_PIN;
+                                 ledoffpin = LAMPEB_PIN;
+                              }
+                              OSZI_B_LO();
+                              if(lokstatus & (1<<FUNKTIONBIT))
+                              {
+                                 
+                                 LAMPEPORT |= (1<<ledonpin); // Lampe  ON
+                                 LAMPEPORT &= ~(1<<ledoffpin); // // Lampe  OFF
+                                 
+                              }
+                              else
+                              {
+                                 // beide lampen OFF
+                                 //OSZI_A_HI();
+                                 LAMPEPORT &= ~(1<<ledonpin); // // eingeschaltete Lampe  OFF
+                                 
+                              }
+                              OSZI_B_HI();
+                              ledstatus &= ~(1<<LED_CHANGEBIT);
+                           }
+
+
+                                 //77
+
+
+
+
+
                displaydata[SPEED] = speed;
                // end speed var
                //OSZI_B_HI();
@@ -1475,7 +1533,7 @@ int main (void)
 
 
                }
-          
+            //PROTO_B_HI();
             } // loopcount1 >= speedchangetakt
             
          }// Source OK

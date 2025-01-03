@@ -12,10 +12,23 @@
 #define SHORT 0 // Abstand im doppelpaket
 #define LONG 2 // Abstand zwischen Daten
 
-#define OSZIPORT   PORTD      // Ausgang fuer Servo
-#define OSZIDDR      DDRD
+#define OSZIPORT    PORTD      // Ausgang 
+#define OSZIDDR     DDRD
 
+/*
+#define PROTOPORT    PORTB      // Ausgang 
+#define PROTODDR     DDRB
+#define PROTO_A       2
+#define PROTO_B       3
 
+#define PROTO_A_LO() PROTOPORT &= ~(1<<PROTO_A)
+#define PROTO_A_HI() PROTOPORT |= (1<<PROTO_A)
+#define PROTO_A_TOGG()  PROTOPORT ^= (1<<PROTO_A)
+
+#define PROTO_B_LO() PROTOPORT &= ~(1<<PROTO_B)
+#define PROTO_B_HI() PROTOPORT |= (1<<PROTO_B)
+#define PROTO_B_TOGG()  PROTOPORT ^= (1<<PROTO_B)
+*/
 
 #define INT_0     4
 
