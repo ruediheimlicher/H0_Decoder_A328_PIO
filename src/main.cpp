@@ -79,9 +79,7 @@ uint8_t  LOK_ADRESSE = 0xCC;    //   11001100	Trinär mit Adresse 20 20 * DIP 11
 #define INT0_RISING	   0
 #define INT0_FALLING		1
 
-
 volatile uint8_t   loopstatus=0x00;            
-
 
 void lcd_puts(const unsigned char *s);
 
@@ -89,58 +87,40 @@ void lcd_puts(const unsigned char *s);
 volatile uint16_t laufsekunde=0;
 volatile uint8_t laufminute=0;
 volatile uint8_t laufstunde=0;
-
 volatile uint16_t motorsekunde=0;
-
 volatile uint16_t motorminute=0;
-
 volatile uint16_t stopsekunde=0;
-
 volatile uint16_t stopminute=0;
 volatile uint16_t batteriespannung =0;
 volatile uint16_t updatecounter =0;
-
 volatile uint8_t                 curr_screen=0; // aktueller screen
 volatile uint8_t                 curr_cursorzeile=0; // aktuelle zeile des cursors
 volatile uint8_t                 curr_cursorspalte=0; // aktuelle colonne des cursors
 volatile uint8_t                 last_cursorzeile=0; // letzte zeile des cursors
 volatile uint8_t                 last_cursorspalte=0; // letzte colonne des cursors
-
-
 volatile uint16_t                posregister[8][8]={}; // Aktueller screen: werte fuer page und daraufliegende col fuer Menueintraege (hex). geladen aus progmem
-
 volatile uint16_t                cursorpos[8][8]={}; // Aktueller screen: werte fuer page und darauf liegende col fuer den cursor
 volatile uint16_t                 blink_cursorpos=0xFFFF;
-
 volatile uint8_t                 displaystatus = 0; // bits for sending display data
                                           // 0-3: sendposition
                                           // 4,5,6: 
                                           // 7: aktivbit
-
-
 volatile uint8_t                 displaydata[8]  = {};
 
-
-
-uint16_t spicounter=0;
-
 //
+volatile uint8_t	   INT0status=0x00;				
+volatile uint8_t	   signalstatus=0x00; // status TRIT
+volatile uint8_t     pausestatus=0x00;
 
-volatile uint8_t	INT0status=0x00;				
-volatile uint8_t	signalstatus=0x00; // status TRIT
-volatile uint8_t  pausestatus=0x00;
+
+volatile uint8_t     address=0x00; 
+volatile uint8_t     data=0x00;   
+
+volatile uint16_t    saveEEPROM_Addresse = 0;
+volatile uint8_t     EEPROM_savestatus=0x00;   
+volatile uint8_t     EEPROM_lastsavedstatus = 0;
 
 
-volatile uint8_t   address=0x00; 
-volatile uint8_t   data=0x00;   
-
-volatile uint16_t  saveEEPROM_Addresse = 0;
-volatile uint8_t   EEPROM_savestatus=0x00;   
-volatile uint8_t  EEPROM_lastsavedstatus = 0;
-
-volatile uint16_t MEMBuffer = 0;
-
-//volatile uint16_t	HIimpulsdauer=0;			//	Dauer des LOimpulsdaueres Definitiv
 
 volatile uint8_t	HIimpulsdauerPuffer=22;		//	Puffer fuer HIimpulsdauer
 volatile uint8_t	HIimpulsdauerSpeicher=0;		//	Speicher  fuer HIimpulsdauer
@@ -165,7 +145,6 @@ volatile uint8_t   lokstatus=0x00; // Funktion, Richtung
 volatile uint8_t   oldlokdata = 0;
 volatile uint8_t   lokdata = 0;
 volatile uint8_t   deflokdata = 0;
-//volatile uint16_t   newlokdata = 0;
 
 volatile uint8_t   rawdataA = 0;
 volatile uint8_t   rawdataB = 0;
@@ -180,10 +159,7 @@ volatile uint8_t     startspeed = 0; // Anlaufimpuls
 volatile uint8_t     speedcode = 0;
 volatile int8_t      speedintervall = 0;
 
-volatile uint8_t   dimmcounter = 0; // LED dimmwertcounter
-volatile uint8_t   ledpwm = 0x40; // LED PWM 50%
 volatile uint8_t   ledstatus=0; // status LED
-
 
 volatile uint8_t   ledonpin = LAMPEA_PIN; // Stirnlampe ON
 volatile uint8_t   ledoffpin = LAMPEB_PIN; // Stirnlampe OFF
@@ -200,18 +176,10 @@ volatile uint8_t   richtungcounter = 0; // delay fuer Richtungsimpuls
 volatile uint8_t     pwmpin = MOTORA_PIN;           // Motor PWM
 volatile uint8_t     richtungpin = MOTORB_PIN;      // Motor Richtung
 
-
-volatile uint16_t	taktimpuls=0;
-
 volatile uint16_t   motorPWM=0;
 
-
-
-
-volatile uint8_t   taskcounter = 0;
-
-volatile uint8_t   speedlookup[15] = {};
-uint8_t speedlookuptable[10][15] =
+volatile uint8_t    speedlookup[15] = {};
+uint8_t             speedlookuptable[10][15] =
 {
    {0,18,36,54,72,90,108,126,144,162,180,198,216,234,252},  // 0
    {0,30,40,50,60,70,80,90,100,110,120,130,140,150,160},    // 1
@@ -229,20 +197,19 @@ uint8_t speedlookuptable[10][15] =
 
 };
 
-volatile uint8_t speedindex = 8;
+volatile uint8_t     speedindex = 8;
+volatile uint8_t     maxspeed =  0; //speedlookuptable[speedindex][14];
+volatile uint8_t     minspeed =  0;
 
-volatile uint8_t   maxspeed =  0; //speedlookuptable[speedindex][14];
+volatile uint8_t     lastDIR =  0;
+uint8_t              loopledtakt = 0x40;
+uint8_t              refreshtakt = 0x45;
+uint16_t             speedchangetakt = 0x150; // takt fuer beschleunigen/bremsen
 
-volatile uint8_t   lastDIR =  0;
-
-uint8_t loopledtakt = 0x40;
-uint8_t refreshtakt = 0x45;
-uint16_t speedchangetakt = 0x150; // takt fuer beschleunigen/bremsen
-
+uint16_t             lasteepromaddress = MAX_EEPROM - 1; // letzte benutzte Adresse, max je nach typ
+uint8_t              lasteepromdata = 0;
 
 volatile uint8_t loktyptable[4];
-
-volatile uint8_t   minspeed =  0;
 
 uint16_t displaycounter0;
 uint16_t displaycounter1;
@@ -250,10 +217,7 @@ uint16_t displaycounter1;
 uint16_t displayfenstercounter = 0; // counter fuer abgelaufene Zeit im Display-Fenster
 
 //extern uint8_t display_init(void);//
-
-
 void displayfensterfunction(void);
-
 
 void spi_init(void) // SPI-Pins aktivieren
 {
@@ -266,11 +230,6 @@ void spi_init(void) // SPI-Pins aktivieren
    SPCR = (1<<SPE)|(1<<MSTR);
    SPSR |= (1<<SPI2X);
 }
-
-uint16_t lasteepromaddress = MAX_EEPROM - 1; // letzte benutzte Adresse, max je nach typ
-uint8_t lasteepromdata = 0;
-
-
 
 void slaveinit(void)
 {
@@ -285,13 +244,7 @@ void slaveinit(void)
 
    //OSZIPORT |= (1<<INT_0);   //
    //OSZIDDR |= (1<<INT_0);   //Pin 7 von PORT D als Ausgang fuer SOSZI B
-/*
-   OSZIDDR |= (1<<PAKETA);
-   OSZIPORT |= (1<<PAKETA);   //PAKETA
-      //
-   OSZIDDR |= (1<<PAKETB); 
-   OSZIPORT |= (1<<PAKETB);   //PAKETB
- */  
+ 
    displaydata[0] = 3;
    displaydata[1] = 44;
    
@@ -300,7 +253,6 @@ void slaveinit(void)
  	LCD_DDR |= (1<<LCD_ENABLE_PIN);	//Pin 6 von PORT B als Ausgang fuer LCD
 	LCD_DDR |= (1<<LCD_CLOCK_PIN);	//Pin 7 von PORT B als Ausgang fuer LCD
 
-   
    TESTDDR |= (1<<TEST0); // test0
    TESTPORT |= (1<<TEST0); // HI
    TESTDDR &= ~(1<<TEST1); // test1 INPUT
@@ -318,6 +270,7 @@ void slaveinit(void)
    LAMPEDDR |= (1<<LAMPEB_PIN);  // Lampe B
    LAMPEPORT &= ~(1<<LAMPEB_PIN); // LO
    /*
+   // test
    for(uint8_t i=0;i<2;i++)
    {
       LOOPLEDPORT |=(1<<LOOPLED);
@@ -330,18 +283,7 @@ void slaveinit(void)
    
 
    //initADC(MEM);
-   
-   // default
-   //LOOPLEDPORT |=(1<<LOOPLED);
-  
-/*
-   // TWI
-   DDRC |= (1<<5);   //Pin 0 von PORT C als Ausgang (SCL)
-   PORTC |= (1<<5);   //   ON
-   DDRC |= (1<<4);   //Pin 1 von PORT C als Ausgang (SDA)
-   PORTC |= (1<<4);   //   ON
-*/
-   
+
    if (SHOWDISPLAY == 1)
    {
       spi_init();
@@ -350,24 +292,19 @@ void slaveinit(void)
       _delay_ms(5);
    }
    
-     
-    
-     
 }
 
 
 void timer2 (uint8_t wert) 
 { 
-//	TCCR2 |= (1<<CS02);				//8-Bit Timer, Timer clock = system clock/256
+   //	TCCR2 |= (1<<CS02);				//8-Bit Timer, Timer clock = system clock/256
 
-//Takt fuer Servo
-//	TCCR2 |= (1<<CS20)|(1<<CS21);	//Takt /64	Intervall 64 us
+   //Takt fuer Servo
+   //	TCCR2 |= (1<<CS20)|(1<<CS21);	//Takt /64	Intervall 64 us
 
 	TCCR2A |= (1<<WGM21);		//	ClearTimerOnCompareMatch CTC
    TCCR2B |= (1<<CS21); // no prescaler
-	//OC2 akt
-
-
+	//OC2 takt
 	TIMSK2 |= (1<<OCIE2A);			//CTC Interrupt aktivieren
    TIMSK2 |=(1<<TOIE2);        //interrupt on Compare Match A
 	TCNT2 = 0x00;					//Zaehler zuruecksetzen
@@ -390,10 +327,7 @@ void int0_init(void)
 // MARK:  INT0
 ISR(INT0_vect) 
 {
-   //OSZI_A_LO();
-   //if(displayfenstercounter%4 == 0)
    {
-      //OSZI_B_LO();
       
       if (INT0status == 0) // neue Daten beginnen
       {
@@ -419,30 +353,21 @@ ISR(INT0_vect)
       else // Data im Gang, neuer Interrupt
       {
          INT0status |= (1<<INT0_WAIT);
-         
          pausecounter = 0;
          abstandcounter = 0; 
          waitcounter = 0;
          //     OSZIALO;
       }
-      //OSZI_A_HI();
-      //OSZI_B_HI();
+
    }
-   /*
-   else
-   {
-      INT0status = 0;
-   }
-   */
+
 }
 
 
 // MARK: ISR Timer2
 
 ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
-{
-   
-   
+{ 
    //OSZI_B_LO();
    if (speed)
    {
@@ -460,7 +385,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       MOTORPORT &= ~(1<<pwmpin);
       motorPWM = 0;
    }
-   //OSZI_B_HI();
    
    if (displayfenstercounter > 8)
    {
@@ -468,8 +392,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       //displayfenstercounter=0;
    }
    
-   
-   // MARK: TIMER0 TIMER0_COMPA INT0
+   // MARK: TIMER2  TIMER2_COMPA INT0
    if (INT0status & (1<<INT0_WAIT))
    {
       waitcounter++; 
@@ -480,10 +403,8 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
          INT0status &= ~(1<<INT0_WAIT);
          if (INT0status & (1<<INT0_PAKET_A))
          {
-            
             if (tritposition < 8) // Adresse)
             {
-
                if (INPIN & (1<<DATAPIN)) // Pin HI, 
                {
                   lokadresseA |= (1<<(7-tritposition)); // bit ist 1
@@ -491,28 +412,23 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                else // 
                {
                   lokadresseA &= ~(1<<(7-tritposition)); // bit ist 0
-
                }
                if((tritposition == 7) && (((lokadresseA & 0x03 ) == 0x01) || ((lokadresseA & 0x03 ) == 0x10)))
                {
-
                   lokadresseTRIT = lokadresseA;
                }
-
             }
             else if (tritposition < 10) // Funktion
             {
                if (INPIN & (1<<DATAPIN)) // Pin HI, 
                {
                   rawfunktionA |= (1<<(tritposition-8)); // bit ist 1
-                  
                }
                else // 
                {
                   rawfunktionA &= ~(1<<(tritposition-8)); // bit ist 0
                }
-            }
-            
+            }    
             else
             {
                if (INPIN & (1<<DATAPIN)) // Pin HI, 
@@ -524,14 +440,12 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   rawdataA &= ~(1<<(tritposition-10)); // bit ist 0
                }
             }
-            
          }
          
          if (INT0status & (1<<INT0_PAKET_B))
          {
             if (tritposition < 8) // Adresse)
-            {
-               
+            {           
                if (INPIN & (1<<DATAPIN)) // Pin HI, 
                {
                   lokadresseB |= (1<<(7-tritposition)); // bit ist 1
@@ -550,10 +464,8 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                else // 
                {
                   rawfunktionB &= ~(1<<(tritposition-8)); // bit ist 0
-               }
-               
-            }
-            
+               }            
+            }         
             else
             {
                if (INPIN & (1<<DATAPIN)) // Pin HI, 
@@ -564,8 +476,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                {
                   rawdataB &= ~(1<<(tritposition-10)); // bit ist 0
                }
-            }
-            
+            }         
             if (!(lokadresseB == LOK_ADRESSE))
             {
                
@@ -592,8 +503,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
             // Paket A?
             if (INT0status & (1<<INT0_PAKET_A)) // erstes Paket, Werte speichern
             {
-               //OSZI_A_TOGG();
-            
                oldfunktion = funktion;
                
                INT0status &= ~(1<<INT0_PAKET_A); // Bit fuer erstes Paket weg
@@ -602,7 +511,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
             }
             else if (INT0status & (1<<INT0_PAKET_B)) // zweites Paket, Werte testen
             {
-               //OSZI_B_LO();
                //SYNC_LO();
                displaystatus |= (1<<DISPLAY_GO);
                // // Displayfenster begin
@@ -618,29 +526,22 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                {
                   //OSZI_A_LO();
                   if (lokadresseB == LOK_ADRESSE)
-                  {
-                     
-                     
-                     
+                  {   
                      // Daten uebernehmen
                      
                      lokstatus |= (1<<ADDRESSBIT);
                      deflokadresse = lokadresseB;
                      //deffunktion = (rawdataB & 0x03); // bit 0,1 funktion als eigene var
-                     deffunktion = rawfunktionB;
-                     
-                     
+                     deffunktion = rawfunktionB;        
                      if (deffunktion)
                      {
                         lokstatus |= (1<<FUNKTIONBIT);
-                        ledstatus |= (1<<LED_CHANGEBIT); // change setzen
-                        
+                        ledstatus |= (1<<LED_CHANGEBIT); // change setzen   
                      }
                      else
                      {
                         lokstatus &= ~(1<<FUNKTIONBIT);
-                        ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
-                        
+                        ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen                  
                      }
                      // deflokdata aufbauen
                      for (uint8_t i=0;i<8;i++)
@@ -655,8 +556,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            deflokdata &= ~(1<<i);
                         }
                      }
-                     
-                     
+
                      // Richtung
                      if (deflokdata == 0x03) // Wert 1, > Richtung togglen
                      {
@@ -678,7 +578,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      } // deflokdata == 0x03
                      else // speed anpassen
                      {  
-                    
                         {
                            //lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
 
@@ -741,9 +640,10 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 
                         }
                         //OSZI_B_HI();
-                        // MARK: speedcode    
+
+                        // MARK: speedcode  
+
                         oldspeed = speed; // Istwert, behalten
-                        
                         newspeed = speedlookup[speedcode]; // solllwert
                         
                         // Startbedingung, langsam anfahren bis speedlookup[1]
@@ -775,9 +675,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                               speedintervall = 4;
                            }
 
-                        
-                        
-                     
                      }
                      //SYNC_HI();
                      //OSZI_A_HI();
@@ -810,10 +707,8 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                }
                //SYNC_HI();
                //OSZI_B_HI();
-            } // End Paket B
-          
+            } // End Paket B         
          }
-        
       } // waitcounter > 2
    } // if INT0_WAIT
    
@@ -853,12 +748,9 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 
 void displayfensterfunction(void)
 {
-   
    displayfenstercounter = 0;
    _delay_ms(2);
 }
-
-
 
 // Funktion, um ein Byte in den EEPROM zu schreiben
 void EEPROM_Write(uint16_t address, uint8_t data) {
@@ -893,8 +785,7 @@ uint8_t EEPROM_read(uint16_t address) {
     return EEDR;
 }
 
-
-
+// MARK: MAIN
 int main (void) 
 {
    
@@ -904,7 +795,7 @@ int main (void)
    int0_init();
 	_delay_ms(10);
    timer2(4);
-   _delay_ms(100);
+   //_delay_ms(10);
 	// initialize the LCD 
 	lcd_initialize(LCD_FUNCTION_8x2, LCD_CMD_ENTRY_INC, LCD_CMD_ON);
    _delay_ms(100);
@@ -914,50 +805,30 @@ int main (void)
    //_delay_ms(100);
 	lcd_puts("H0-Decoder A328_PIO");
 	
-   
-   
 //   timer2(4);
 	
 	//initADC(TASTATURPIN);
 	
-	
-	//uint16_t loopcount0=0;
    uint16_t loopcount0=0;
    uint16_t loopcount1=0;
 
    uint16_t firstruncount0=0;
    uint16_t firstruncount1=0;
 
-	
-	
-
-   
    oldfunktion = 0x03; // 0x02
    oldlokdata = 0xCE;
-   ledpwm = LEDPWM;
    
-   
-   
-   
-
    lcd_gotoxy(0,1);
    lcd_puts("ADR ");
    lcd_puthex(LOK_ADRESSE);
    lcd_putc(' ');
    lcd_hextobin(LOK_ADRESSE);
    
-   _delay_ms(400);
+   _delay_ms(100);
    lcd_cls();
    //lcd_gotoxy(0,2);
    //lcd_puts(" adrIN");
 
-   //lcd_gotoxy(0,2);
-   
-   //lcd_gotoxy(0,3);
-   //lcd_puts("data ");
-   
-   
- //  TWI_Init();
  //  _delay_ms(100);
    
    uint8_t counter = 0;
@@ -987,8 +858,7 @@ int main (void)
 
    // naechste Adresse fuer save Status
    for (uint16_t loc = 0;loc < MAX_EEPROM; loc++)
-   {
-      
+   {   
       uint8_t locdata = EEPROM_Read(loc);
       if(locdata == 0xFF)
       {
@@ -1080,27 +950,9 @@ int main (void)
       richtungpin = MOTORB_PIN;
       ledonpin = LAMPEA_PIN;
       ledoffpin = LAMPEB_PIN;
-
    }
-   
+
   
-   //ledstatus |= (1<<LED_CHANGEBIT);
-
-    
-    /*
-   if(saveEEPROM_Addresse)
-   {
-      lcd_putc('*');
-      uint8_t lastsaved = EEPROM_Read(saveEEPROM_Addresse - 1);
-      lcd_puthex(lastsaved); // letzter gespeicherter Stetus
-   }
-   else
-   {
-      lcd_putc('*');
-      lcd_puts("first");
-   }
-   */
-
     /*
    for (uint16_t loc = MAX_EEPROM-1;loc > MAX_EEPROM - 3 ; loc--)
    {
@@ -1120,9 +972,7 @@ int main (void)
       //OSZI_B_LO();
       // Timing: loop: 40 us, takt 85us, mit if-teil 160 us
       wdt_reset();
-      
-        
-      // firstrun
+        // firstrun
       
       if(loopstatus & (1<<FIRSTRUNBIT))
       {
@@ -1131,19 +981,12 @@ int main (void)
          {
 
             firstruncount0=0;
-            
-
             // Takt for display
             firstruncount1++;
             
             if (firstruncount1 >= 0xF0)
             {
-               //OSZI_A_LO();
- 
-                //int0_init();
-               
-               //_delay_ms(2);
-               // timer2(4);
+              
                sei();
                
                loopstatus &= ~(1<<FIRSTRUNBIT);
@@ -1158,17 +1001,13 @@ int main (void)
    //   else
          
       {
-         
-         
          {  
-            
-            
             displaystatus &= ~(1<<DISPLAY_GO);
             // MARK: display       
             if((displaystatus & (1<<DISPLAY_GO)) ) //&& displayfenstercounter)
             {
                displaystatus &= ~(1<<DISPLAY_GO);
-               //    displayfenstercounter = 0;
+               //displayfenstercounter = 0;
                //display_write_cmd(0xB1);
                //display_write_data(0xB1);
                //display_go_to(10,4);
@@ -1197,35 +1036,19 @@ int main (void)
                    display_write_int(displaydata[SPEED],1);
                    */
                }
-               
-               
+            
             } //  if((displaystatus & (1<<DISPLAY_GO)
-            
-            
-            
-            
-            
+         
             loopcount1++;
 
             if (loopcount1 >= speedchangetakt) // 150
             {
-               
-
-            // ************ von refreshtakt
-            // xxx
-
-            // xxx
-
-             // ********* end refreshtakt
-
-               lcdcounter++;
+                lcdcounter++;
                //LOOPLEDPORT ^= (1<<LOOPLED); // Kontrolle lastDIR
                loopcount1 = 0;
-               //OSZIATOG;
                
-               //OSZI_B_LO();
                
-               // MARK: speed var
+               // MARK: SPEED VAR
                // speed var
                if((newspeed > speed)) // beschleunigen, speedintervall positiv
                {
@@ -1250,8 +1073,6 @@ int main (void)
                }
                else if((newspeed < speed)) // bremsen, speedintervall negativ
                {
-                  //OSZI_A_LO();
-                  
                   if((speed > newspeed ) && ((speed + 2*speedintervall) >= 0))
                   
                   //if((speed +speedintervall) >= 0) // 241231 : war 2*speedintervall
@@ -1262,128 +1083,123 @@ int main (void)
                      {
                         if((newspeed == 0) ) // Motor soll abstellen
                         {
-                           
-
-                           OSZI_A_HI();
                            speed = 0; // Motor OFF
                         } // if newspeed == 0
 
                      } //  if(speed <= minspeed/4)
-                     
-                     
+                  
                   }
                   else 
                   {
                      speed = newspeed;
-                     
                   }
                   //OSZI_A_HI();
                } // newspeed < speed
 
                // speed == 0 start
 
-                           if (speed == 0) // Stillstand erreicht
-                           {
-                              if(lokstatus & (1<<RICHTUNGBIT))
-                              {
-                                 if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
-                                 {
-                                    OSZI_B_LO();
-                                    EEPROM_savestatus &= ~0xF0;
-                                    EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
-                                    if(pwmpin == MOTORA_PIN) // > auf MOTORB wechseln
-                                    {
-                                       pwmpin = MOTORB_PIN;
-                                       richtungpin = MOTORA_PIN;
-                                       EEPROM_savestatus &= ~(1<<MOTORA_PIN);
-                                       EEPROM_savestatus |= (1<<MOTORB_PIN);
-                                       
-                                       if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
-                                       {
-                                          
-                                       // LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                                       // LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A ON
-                                          EEPROM_savestatus |= (1<<LAMPEA_PIN);
-                                          EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
-                                       }
-                                       else // funktion ist 0, ausschalten
-                                       {
-                                          // beide lampen OFF
-                                       // LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                                       // LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
-                                          EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
-                                          EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
-                                       }
-                                    }
-                                    else  if(pwmpin == MOTORB_PIN)// auch default
-                                    {
-                                       pwmpin = MOTORA_PIN;
-                                       richtungpin = MOTORB_PIN;
-                                       EEPROM_savestatus &= ~(1<<MOTORB_PIN);
-                                       EEPROM_savestatus |= (1<<MOTORA_PIN);
-
-                                       if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
-                                       {
-                                          //LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B ON
-                                          //LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
-                                          EEPROM_savestatus |= (1<<LAMPEB_PIN);
-                                          EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
-                                       }
-                                       else // funktion ist 0, ausschalten
-                                       {
-                                          // beide lampen OFF
-                                       // LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                                       // LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
-                                          EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
-                                          EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
-                                       }
-                                       
-                                    }
-                                    OSZI_B_HI();
-                                    
-                                    EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-                                    OSZI_B_LO();
-                                    
-                                    lcd_gotoxy(0,2);
-                                    lcd_putint(saveEEPROM_Addresse);
-                                    lcd_putc(' ');
-                                    lcd_puthex(EEPROM_savestatus);
-                                    
-                                    if(saveEEPROM_Addresse > 5)
-                                    {
-                                       lcd_gotoxy(19,1);
-                                       lcd_putc('N');
-                                       EEPROM_Clear();
-                                       saveEEPROM_Addresse = 0;
-                                    }
-                                    else 
-                                    
-                                    {
-                                    //  lcd_gotoxy(19,1);
-                                    //  lcd_putc(' ');
-                                       saveEEPROM_Addresse++;
-                                    }
-                                    
-
-                                    MOTORPORT |= (1<<richtungpin); // Richtung setzen
-                                    
-                                    lokstatus &= ~(1<<LOK_CHANGEBIT);
-
-                                    OSZI_B_HI();
-                                    
-                                 } // if changebit
-                                 
-                                  lokstatus &= ~(1<<RICHTUNGBIT);
-
-                                 OSZI_A_HI();
-
-                              } // if(lokstatus & (1<<RICHTUNGBIT))
-
-
-
-                           } // if speeed == 0
+               if (speed == 0) // Stillstand erreicht
+               {
+                  if(lokstatus & (1<<RICHTUNGBIT))
+                  {
+                     if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
+                     {
+                        OSZI_B_LO();
+                        EEPROM_savestatus &= ~0xF0;
+                        EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
+                        if(pwmpin == MOTORA_PIN) // > auf MOTORB wechseln
+                        {
+                           pwmpin = MOTORB_PIN;
+                           richtungpin = MOTORA_PIN;
+                           EEPROM_savestatus &= ~(1<<MOTORA_PIN);
+                           EEPROM_savestatus |= (1<<MOTORB_PIN);
                            
-                           // speed == 0 end
+                           if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
+                           {
+                              
+                           // LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                           // LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A ON
+                              EEPROM_savestatus |= (1<<LAMPEA_PIN);
+                              EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
+                           }
+                           else // funktion ist 0, ausschalten
+                           {
+                              // beide lampen OFF
+                           // LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                           // LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                              EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
+                              EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
+                           }
+                        }
+                        else  if(pwmpin == MOTORB_PIN)// auch default
+                        {
+                           pwmpin = MOTORA_PIN;
+                           richtungpin = MOTORB_PIN;
+                           EEPROM_savestatus &= ~(1<<MOTORB_PIN);
+                           EEPROM_savestatus |= (1<<MOTORA_PIN);
+
+                           if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
+                           {
+                              //LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B ON
+                              //LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                              EEPROM_savestatus |= (1<<LAMPEB_PIN);
+                              EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
+                           }
+                           else // funktion ist 0, ausschalten
+                           {
+                              // beide lampen OFF
+                           // LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
+                           // LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
+                              EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
+                              EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
+                           }
+                           
+                        }
+                        OSZI_B_HI();
+                        
+                        EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
+                        OSZI_B_LO();
+                        
+                        lcd_gotoxy(0,2);
+                        lcd_putint(saveEEPROM_Addresse);
+                        lcd_putc(' ');
+                        lcd_puthex(EEPROM_savestatus);
+                        
+                        if(saveEEPROM_Addresse > 5)
+                        {
+                           lcd_gotoxy(19,1);
+                           lcd_putc('N');
+                           EEPROM_Clear();
+                           saveEEPROM_Addresse = 0;
+                        }
+                        else 
+                        
+                        {
+                        //  lcd_gotoxy(19,1);
+                        //  lcd_putc(' ');
+                           saveEEPROM_Addresse++;
+                        }
+                        
+
+                        MOTORPORT |= (1<<richtungpin); // Richtung setzen
+                        
+                        lokstatus &= ~(1<<LOK_CHANGEBIT);
+
+                        OSZI_B_HI();
+                        
+                     } // if changebit
+                     
+                        lokstatus &= ~(1<<RICHTUNGBIT);
+
+                     OSZI_A_HI();
+
+                  } // if(lokstatus & (1<<RICHTUNGBIT))
+
+
+
+               } // if speeed == 0
+               
+               // speed == 0 end
 
 
 
@@ -1422,36 +1238,7 @@ int main (void)
                   ledstatus &= ~(1<<LED_CHANGEBIT);
                }
 
-
-                  //77
-
-
-
-
-                           // 250103 Lampen end
-
-
-
                //displaydata[SPEED] = speed;
-               // end speed var
-               //OSZI_B_HI();
-               /*
-               if(speed == 0)
-               {
-                   if(lokstatus & (1<<RICHTUNGBIT)) 
-                   {
-                     lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
-
-                       //lokstatus |= (1<<LOK_CHANGEBIT); // lok-change setzen
-                       //ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
-    
-
-                     //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-                   }
-
-
-               }
-               */
           
             } // loopcount1 >= speedchangetakt
             
@@ -1466,10 +1253,7 @@ int main (void)
             //LOOPLEDPORT ^= (1<<LOOPLED); 
             
             loopcount0=0;
-            
-            //LOOPLEDPORT ^= (1<<LOOPLED); 
-            
-            
+ 
             // Takt for display
              // MARK: LCD loop Display
             displaycounter1++;
