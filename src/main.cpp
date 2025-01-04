@@ -560,7 +560,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      // Richtung
                      if (deflokdata == 0x03) // Wert 1, > Richtung togglen
                      {
-                        OSZI_A_LO();
+                        //OSZI_A_LO();
                         if (!(lokstatus & (1<<RICHTUNGBIT))) // Start Richtungswechsel
                         {
                            lokstatus |= (1<<RICHTUNGBIT); // Vorgang starten, speed auf 0 setzen
@@ -1002,55 +1002,20 @@ int main (void)
          
       {
          {  
-            displaystatus &= ~(1<<DISPLAY_GO);
-            // MARK: display       
-            if((displaystatus & (1<<DISPLAY_GO)) ) //&& displayfenstercounter)
-            {
-               displaystatus &= ~(1<<DISPLAY_GO);
-               //displayfenstercounter = 0;
-               //display_write_cmd(0xB1);
-               //display_write_data(0xB1);
-               //display_go_to(10,4);
-               //display_write_data(lcdcounter++);
-               
-               //display_write_int(lcdcounter,1);
-               
-               if (SHOWDISPLAY)
-               {
-                  //OSZI_B_LO();
-                  char_x=100;
-                  char_y = 1;
-                  //OSZI_B_HI();
-                  
-                  //display_write_int(lcdcounter,1);
-                  //display_write_sec_min(lcdcounter,1);
-                  //OSZI_B_HI();
-                  lcdcounter++;
-                  /*
-                   char_x = RANDLINKS;
-                   char_y = 3;
-                   display_write_str("speedcode:",1);
-                   display_write_int(displaydata[SPEEDCODE],1);
-                   display_write_str(" ",1);
-                   display_write_str("speed:",1);
-                   display_write_int(displaydata[SPEED],1);
-                   */
-               }
-            
-            } //  if((displaystatus & (1<<DISPLAY_GO)
-         
+
+
             loopcount1++;
 
             if (loopcount1 >= speedchangetakt) // 150
             {
                 lcdcounter++;
-               //LOOPLEDPORT ^= (1<<LOOPLED); // Kontrolle lastDIR
-               loopcount1 = 0;
+               LOOPLEDPORT ^= (1<<LOOPLED); // Kontrolle lastDIR
                
                
                // MARK: SPEED VAR
+
                // speed var
-               if((newspeed > speed)) // beschleunigen, speedintervall positiv
+               if(  (newspeed > speed)) // beschleunigen, speedintervall positiv
                {
                   //OSZI_B_LO();
                   if(speed < (newspeed - speedintervall))
@@ -1104,7 +1069,7 @@ int main (void)
                   {
                      if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
                      {
-                        OSZI_B_LO();
+                        //B_LO();
                         EEPROM_savestatus &= ~0xF0;
                         EEPROM_savestatus |= ((speedcode & 0x0F) << 4);
                         if(pwmpin == MOTORA_PIN) // > auf MOTORB wechseln
@@ -1155,10 +1120,10 @@ int main (void)
                            }
                            
                         }
-                        OSZI_B_HI();
+                        //OSZI_B_HI();
                         
                         EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-                        OSZI_B_LO();
+                        //OSZI_B_LO();
                         
                         lcd_gotoxy(0,2);
                         lcd_putint(saveEEPROM_Addresse);
@@ -1179,19 +1144,18 @@ int main (void)
                         //  lcd_putc(' ');
                            saveEEPROM_Addresse++;
                         }
-                        
-
+                     
                         MOTORPORT |= (1<<richtungpin); // Richtung setzen
                         
                         lokstatus &= ~(1<<LOK_CHANGEBIT);
 
-                        OSZI_B_HI();
+                        //OSZI_B_HI();
                         
                      } // if changebit
                      
                         lokstatus &= ~(1<<RICHTUNGBIT);
 
-                     OSZI_A_HI();
+                     //OSZI_A_HI();
 
                   } // if(lokstatus & (1<<RICHTUNGBIT))
 
@@ -1200,10 +1164,6 @@ int main (void)
                } // if speeed == 0
                
                // speed == 0 end
-
-
-
-
 
                   // 250103 lampen
                // Lampen einstellen
@@ -1245,7 +1205,7 @@ int main (void)
          }// Source OK
          
          
-         loopcount0++;
+         //loopcount0++;
          if (loopcount0>=refreshtakt)
          {
             //OSZI_B_LO();
@@ -1260,7 +1220,7 @@ int main (void)
             if (displaycounter1 > 0x0A)
             {
                displaycounter1=0;
-               LOOPLEDPORT ^= (1<<LOOPLED);
+               //LOOPLEDPORT ^= (1<<LOOPLED);
                if(TESTPIN & (1<<TEST1))
                {
                   lcd_gotoxy(17,1);
@@ -1274,28 +1234,22 @@ int main (void)
                }
                else 
                {
-                  lcd_gotoxy(17,0);
-                  lcd_putint(speed);
-                  lcd_gotoxy(17,2);
-                  lcd_putint2(speedcode);
+                  //lcd_gotoxy(17,0);
+                  //lcd_putint(speed);
+                  //lcd_gotoxy(17,2);
+                  //lcd_putint2(speedcode);
                }
   
                counter++;
                
-               //               int0_init();
-               //               sei();
-               //EIMSK |= (1 << INT0); 
-               /*
-                char_x=80;
-                char_y = 4;
-                display_write_sec_min(lcdcounter, 1);
-                */      
+                    
                //                lcd_gotoxy(16,1);
                //                lcd_putint(lcdcounter);
             }
              
             //OSZI_B_HI();
          }  // loopcount0>=refreshtakt
+
          //OSZI_B_HI();
          
       }
