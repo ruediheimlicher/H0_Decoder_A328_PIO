@@ -224,7 +224,7 @@ uint8_t speedlookuptable[10][15] =
    
    {0,50,65,70,77,90,105,122,140,159,170,188,200,210,220},  // 7
    
-   {0,42,45,50,57,65,75,87,101,116,134,153,173,196,220},    // 8
+   {0,41,45,50,57,65,75,87,101,116,134,153,173,196,220},    // 8
    {0,42,45,51,58,68,79,93,108,125,144,165,188,213,240}     // 9
 
 };
@@ -692,15 +692,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      } // deflokdata == 0x03
                      else // speed anpassen
                      {  
-                        /*
-                        if(lokstatus & (1<<RICHTUNGBIT)) // Richtungswechsel noch im Gang
-                        {
-                              speedcode = 0;
-                              //lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
-                              OSZI_A_LO();
-                        }
-                        else // speed-Angabe
-                        */
+                    
                         {
                            //lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
 
@@ -771,8 +763,8 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         // Startbedingung, langsam anfahren bis speedlookup[1]
                         if((speedcode == 1) && !(lokstatus & (1<<STARTBIT))  && !(lokstatus & (1<<RUNBIT))) // noch nicht gesetzt  
                            {
-                              oldspeed = speedlookup[1] / 4 * 3;
-                              newspeed = speedlookup[1]; //;+ STARTKICK; // kleine Zugabe
+                              oldspeed = speedlookup[1] / 2;
+                              newspeed = speedlookup[1]; //
                               //lokstatus |= (1<<STARTBIT);
                            }
                         else
@@ -791,7 +783,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         }
 
                         speedintervall = (newspeed - oldspeed)>>2; // 4 teile
-
+                           
                            if((speedcode > 2) && (speedintervall > 4) )
                            {
                               speedintervall = 4;
@@ -1003,7 +995,13 @@ int main (void)
          lcd_putint(loc);
          lcd_putc(' ');
          lcd_puthex(locdata);
-         lcd_putc(' ');
+         if(loc)
+         {
+            lcd_putc(' ');
+            lcd_puthex(EEPROM_Read(loc - 1));
+         }
+         
+
          saveEEPROM_Addresse = loc;
          break;
 
@@ -1181,26 +1179,7 @@ int main (void)
             
             
             
-            if(lokstatus & (1<<FUNKTIONBIT))
-            {
-               /*
-                if(dimmcounter == 3)
-                {
-                LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON
-                
-                }
-                dimmcounter++;
-                if(dimmcounter > 32)
-                {
-                LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
-                dimmcounter = 0;
-                }
-                */
-            }
             
-
-            
-            //continue;
             
             loopcount1++;
 
@@ -1299,7 +1278,7 @@ int main (void)
 */
 // xxx
 
-             // ********* end rereshtakt
+             // ********* end refreshtakt
 
                lcdcounter++;
                //LOOPLEDPORT ^= (1<<LOOPLED); // Kontrolle lastDIR
@@ -1337,7 +1316,7 @@ int main (void)
                   
                   //if((speed > newspeed ) && ((speed + 2*speedintervall) > 0))
                   
-                  if((speed +speedintervall) > 0) // 241231 : war 2*speedintervall
+                  if((speed +speedintervall) >= 0) // 241231 : war 2*speedintervall
                   {
                      speed += speedintervall;// 241231 : war 2*speedintervall
                      
@@ -1346,7 +1325,25 @@ int main (void)
                         if((newspeed == 0) ) // Motor soll abstellen
                         {
                            
-                           
+
+                           OSZI_A_HI();
+                           speed = 0; // Motor OFF
+                        } // if newspeed == 0
+
+                     } //  if(speed <= minspeed/4)
+                     
+                     
+                  }
+                  else 
+                  {
+                     speed = newspeed;
+                     
+                  }
+                  //OSZI_A_HI();
+               } // newspeed < speed
+
+               // speed == 0 start
+
                            if (speed == 0) // Stillstand erreicht
                            {
                               if(lokstatus & (1<<RICHTUNGBIT))
@@ -1448,35 +1445,9 @@ int main (void)
 
                            } // if speeed == 0
                            
-                          
- 
-                           
-                           
-
-                              // 333
-
-                           
-                           // 333 end
-
-                           //EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
-                           
+                           // speed == 0 end
 
 
-                           OSZI_A_HI();
-                           speed = 0; // Motor OFF
-                        } // if newspeed == 0
-
-                     } //  if(speed <= minspeed/4)
-                     
-                     
-                  }
-                  else 
-                  {
-                     speed = newspeed;
-                     
-                  }
-                  //OSZI_A_HI();
-               } // newspeed < speed
                            // 250103 lampen
                   // Lampen einstellen
                if(ledstatus & (1<<LED_CHANGEBIT))
