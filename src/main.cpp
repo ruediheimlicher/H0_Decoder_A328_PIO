@@ -1057,6 +1057,7 @@ int main (void)
    {
       lcd_putc('*');
       lcd_puts("first");
+      lcd_putc('*');
    }
 
   
@@ -1348,7 +1349,7 @@ int main (void)
                            
                            
 
-       // 333
+                              // 333
 
                            if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
                            {
@@ -1437,7 +1438,7 @@ int main (void)
                               
                            } // if changebit
 
-    // 333 end
+                              // 333 end
 
                            EEPROM_Write(saveEEPROM_Addresse,EEPROM_savestatus);
                            
@@ -1500,6 +1501,7 @@ int main (void)
             {
                displaycounter1=0;
                LOOPLEDPORT ^= (1<<LOOPLED);
+               /*
                if(TESTPIN & (1<<TEST1))
                {
                   lcd_gotoxy(17,1);
@@ -1512,12 +1514,13 @@ int main (void)
                   lcd_putint(speed);
                }
                else 
+               */
                {
-                  lcd_gotoxy(17,2);
+                  lcd_gotoxy(17,0);
                   lcd_putint(speed);
                }
   
-               counter++;
+               //counter++;
                
                //               int0_init();
                //               sei();
