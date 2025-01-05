@@ -203,7 +203,7 @@ volatile uint8_t     minspeed =  0;
 
 volatile uint8_t     lastDIR =  0;
 uint8_t              loopledtakt = 0x40;
-uint8_t              refreshtakt = 0x45;
+uint8_t              refreshtakt = 0x50;
 uint16_t             speedchangetakt = 0x150; // takt fuer beschleunigen/bremsen
 
 uint16_t             lasteepromaddress = MAX_EEPROM - 1; // letzte benutzte Adresse, max je nach typ
@@ -331,8 +331,8 @@ ISR(INT0_vect)
       
       if (INT0status == 0) // neue Daten beginnen
       {
-         displaystatus &= ~(1<<DISPLAY_GO); // displayfenster end
-         SYNC_HI();
+         //displaystatus &= ~(1<<DISPLAY_GO); // displayfenster end
+         //SYNC_HI();
          //OSZI_A_HI(); 
          INT0status |= (1<<INT0_START);
          INT0status |= (1<<INT0_WAIT); // delay, um Wert des Eingangs zum richtigen Zeitpunkt zu messen
@@ -380,7 +380,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       MOTORPORT |= (1<<pwmpin);  // Motor OFF    
    }
    
-   if (motorPWM >= 254) //ON, neuer Motorimpuls
+   if (motorPWM >= 240) //ON, neuer Motorimpuls
    {
       MOTORPORT &= ~(1<<pwmpin);
       motorPWM = 0;
