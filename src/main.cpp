@@ -1073,13 +1073,14 @@ int main (void)
                }
                else if((newspeed < speed)) // bremsen, speedintervall negativ
                {
-                  if((speed > newspeed ) && ((speed + 2*speedintervall) >= 0))
+                  uint8_t bremsintervall = (speedintervall / 4 * 3);
+                  if((speed > newspeed ) && (bremsintervall > 0))
                   
                   //if((speed +speedintervall) >= 0) // 241231 : war 2*speedintervall
                   {
-                     speed += 2 * speedintervall;// 241231 : war 2*speedintervall
+                     speed += bremsintervall; // : war 2*speedintervall
                      
-                     if(speed <= minspeed/4)
+                     if(speed <= minspeed)
                      {
                         if((newspeed == 0) ) // Motor soll abstellen
                         {
@@ -1184,6 +1185,7 @@ int main (void)
                         MOTORPORT |= (1<<richtungpin); // Richtung setzen
                         
                         lokstatus &= ~(1<<LOK_CHANGEBIT);
+                        lokstatus &= ~(1<<RUNBIT);
 
                         OSZI_B_HI();
                         
