@@ -522,6 +522,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                //displayfenstercounter = MAXFENSTERCOUNT;
                
                // MARK: EQUAL
+
                if (lokadresseA && ((rawfunktionA == rawfunktionB) && (rawdataA == rawdataB) && (lokadresseA == lokadresseB))) // Lokadresse > 0 und Lokadresse und Data OK
                {
                   //OSZI_A_LO();
@@ -560,7 +561,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      // Richtung
                      if (deflokdata == 0x03) // Wert 1, > Richtung togglen
                      {
-                        OSZI_A_LO();
+                        //OSZI_A_LO();
                         if (!(lokstatus & (1<<RICHTUNGBIT))) // Start Richtungswechsel
                         {
                            lokstatus |= (1<<RICHTUNGBIT); // Vorgang starten, speed auf 0 setzen
@@ -587,6 +588,8 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                                  
                                  speedcode = 0;
                                  lokstatus &= ~(1<<STARTBIT);
+                                 lokstatus &= ~(1<<RUNBIT); 
+
                                  break;
                               case 0x0C:
                                  
@@ -636,7 +639,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                                  speedcode = 0;
                                  break;
                                  
-                           }
+                           } // switch (deflokdata)
 
                         }
                         //OSZI_B_HI();
@@ -743,7 +746,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       }
       
    } // input LO
-   //OSZI_B_HI();
+   //OSZI_B_HI();pwmpin = MOTORA_PIN;
 }
 
 void displayfensterfunction(void)
@@ -788,7 +791,6 @@ uint8_t EEPROM_read(uint16_t address) {
 // MARK: MAIN
 int main (void) 
 {
-   
    
 	slaveinit();
    
@@ -905,8 +907,6 @@ int main (void)
       //lcd_putc('*');
       lcd_puthex(lastdircode);
 
-
-
       if (lastdircode == 1)
       {
          pwmpin = MOTORA_PIN;
@@ -953,18 +953,6 @@ int main (void)
    }
 
   
-    /*
-   for (uint16_t loc = MAX_EEPROM-1;loc > MAX_EEPROM - 3 ; loc--)
-   {
-     // if(loc < 4)
-      {
-         uint8_t locdata = EEPROM_Read(loc);
-         lcd_puthex(locdata);
-         lcd_putc(' ');
-
-      }
-   }
-   */
    sei();
    
 	while (1)
