@@ -96,6 +96,10 @@
 #define RICHTUNGBIT  6
 #define LOK_CHANGEBIT       7  
 
+// defines fuer richtungstatus
+#define RICHTUNGCHANGESTARTBIT  0
+#define RICHTUNGCHANGEOKBIT  1
+
 
 #define STARTDELAY      100
 

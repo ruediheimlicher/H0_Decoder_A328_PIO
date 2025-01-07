@@ -112,6 +112,8 @@ volatile uint8_t	   INT0status=0x00;
 volatile uint8_t	   signalstatus=0x00; // status TRIT
 volatile uint8_t     pausestatus=0x00;
 
+volatile uint8_t     richtungstatus=0x00;
+
 
 volatile uint8_t     address=0x00; 
 volatile uint8_t     data=0x00;   
@@ -557,28 +559,30 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            deflokdata &= ~(1<<i);
                         }
                      }
-
+                        // MARK: RICHTUNG 
                      // Richtung
                      if (deflokdata == 0x03) // Wert 1, > Richtung togglen
                      {
-                        //OSZI_A_LO();
-                        if (!(lokstatus & (1<<RICHTUNGBIT))) // Start Richtungswechsel
+                       if (richtungstatus == 0) // letzter Richtungswechel ist abgeschlossen
+                        
                         {
-                           lokstatus |= (1<<RICHTUNGBIT); // Vorgang starten, speed auf 0 setzen
-                           richtungcounter = 0;
-                           //oldspeed = speed; // behalten
-                           //speed = 0;
-                           
-                           // 241231 Dirwechsel ausschalten
+                           richtungstatus |= (1<<RICHTUNGCHANGESTARTBIT); // Vorgang starten, speed auf 0 setzen
+                        
                            lokstatus |= (1<<LOK_CHANGEBIT); // lok-change setzen
                            ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
-                           
-                        } // if !(lokstatus & (1<<RICHTUNGBIT)
+
+                        } // if !(richtungstatus & (1<<RICHTUNGCHANGESTARTBIT)
+                        
                         
                         
                      } // deflokdata == 0x03
                      else // speed anpassen
                      {  
+                        if(richtungstatus &(1<<RICHTUNGCHANGEOKBIT)) // richtungswechsel ist erfolgt
+                        {
+                           richtungstatus = 0;
+                        }
+
                         {
                            //lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
 
@@ -1089,7 +1093,7 @@ int main (void)
 
                if (speed == 0) // Stillstand erreicht
                {
-                  if(lokstatus & (1<<RICHTUNGBIT))
+                  if(richtungstatus & (1<<RICHTUNGCHANGESTARTBIT))
                   {
                      if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
                      {
@@ -1175,6 +1179,8 @@ int main (void)
                         lokstatus &= ~(1<<LOK_CHANGEBIT);
                         lokstatus &= ~(1<<RUNBIT);
 
+                        richtungstatus |= (1<<RICHTUNGCHANGEOKBIT); // Richtungswechsel erfolgt
+
                         OSZI_B_HI();
                         
                      } // if changebit
@@ -1183,7 +1189,7 @@ int main (void)
 
                      OSZI_A_HI();
 
-                  } // if(lokstatus & (1<<RICHTUNGBIT))
+                  } // if(richtungstatus & (1<<RICHTUNGCHANGESTARTBIT))
 
 
 
