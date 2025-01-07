@@ -206,7 +206,7 @@ volatile uint8_t     minspeed =  0;
 volatile uint8_t     lastDIR =  0;
 uint8_t              loopledtakt = 0x40;
 uint8_t              refreshtakt = 0x50;
-uint16_t             speedchangetakt = 0x150; // takt fuer beschleunigen/bremsen
+uint16_t             speedchangetakt = 0x400; // takt fuer beschleunigen/bremsen
 
 uint16_t             lasteepromaddress = MAX_EEPROM - 1; // letzte benutzte Adresse, max je nach typ
 uint8_t              lasteepromdata = 0;
@@ -271,18 +271,7 @@ void slaveinit(void)
     
    LAMPEDDR |= (1<<LAMPEB_PIN);  // Lampe B
    LAMPEPORT &= ~(1<<LAMPEB_PIN); // LO
-   /*
-   // test
-   for(uint8_t i=0;i<2;i++)
-   {
-      LOOPLEDPORT |=(1<<LOOPLED);
-      _delay_ms(100);
-      LOOPLEDPORT &= ~(1<<LOOPLED);
-      _delay_ms(100);
 
-   }
-   */
-   
 
    //initADC(MEM);
 
@@ -992,6 +981,10 @@ int main (void)
       
    //   else
          
+            // ************************************************
+            // speedchangetakt
+            // ************************************************
+      
       {
          {  
             displaystatus &= ~(1<<DISPLAY_GO);
@@ -1067,11 +1060,8 @@ int main (void)
                {
                   uint8_t bremsintervall = (speedintervall / 4 * 3);
                   if((speed > newspeed ) && (bremsintervall > 0))
-                  
-                  //if((speed +speedintervall) >= 0) // 241231 : war 2*speedintervall
                   {
                      speed += bremsintervall; // : war 2*speedintervall
-                     
                      if(speed <= minspeed)
                      {
                         if((newspeed == 0) ) // Motor soll abstellen
@@ -1109,17 +1099,12 @@ int main (void)
                            
                            if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
                            {
-                              
-                           // LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                           // LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A ON
                               EEPROM_savestatus |= (1<<LAMPEA_PIN);
                               EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
                            }
                            else // funktion ist 0, ausschalten
                            {
                               // beide lampen OFF
-                           // LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                           // LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
                               EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
                               EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                            }
@@ -1133,16 +1118,12 @@ int main (void)
 
                            if(lokstatus & (1<<FUNKTIONBIT)) // Funktion ist 1, einschalten
                            {
-                              //LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B ON
-                              //LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
                               EEPROM_savestatus |= (1<<LAMPEB_PIN);
                               EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                            }
                            else // funktion ist 0, ausschalten
                            {
                               // beide lampen OFF
-                           // LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                           // LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
                               EEPROM_savestatus &= ~(1<<LAMPEB_PIN);
                               EEPROM_savestatus &= ~(1<<LAMPEA_PIN);
                            }
@@ -1158,7 +1139,7 @@ int main (void)
                         lcd_putc(' ');
                         lcd_puthex(EEPROM_savestatus);
                         
-                        if(saveEEPROM_Addresse > 5)
+                        if(saveEEPROM_Addresse > 20)
                         {
                            lcd_gotoxy(19,1);
                            lcd_putc('N');
