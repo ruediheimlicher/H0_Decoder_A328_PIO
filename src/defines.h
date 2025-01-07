@@ -54,7 +54,7 @@
 #define SPEED     1
 
 
-#define STARTIMPULS 2
+#define STARTINDEX 3 // Index fuer Anlauf
 
 #define STARTKICK 10 // Verlaengerung erster Puls
 

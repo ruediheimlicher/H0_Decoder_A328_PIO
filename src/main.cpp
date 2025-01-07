@@ -194,7 +194,7 @@ uint8_t             speedlookuptable[10][15] =
    
    {0,50,65,70,77,90,105,122,140,159,170,188,200,210,220},  // 7
    
-   {0,41,45,50,57,65,75,87,101,116,134,153,173,196,220},    // 8
+   {0,15,20,27,35,44,55,67,80,116,134,153,173,196,220},    // 8
    {0,42,45,51,58,68,79,93,108,125,144,165,188,213,240}     // 9
 
 };
@@ -206,7 +206,7 @@ volatile uint8_t     minspeed =  0;
 volatile uint8_t     lastDIR =  0;
 uint8_t              loopledtakt = 0x40;
 uint8_t              refreshtakt = 0x50;
-uint16_t             speedchangetakt = 0x400; // takt fuer beschleunigen/bremsen
+uint16_t             speedchangetakt = 0x150; // takt fuer beschleunigen/bremsen
 
 uint16_t             lasteepromaddress = MAX_EEPROM - 1; // letzte benutzte Adresse, max je nach typ
 uint8_t              lasteepromdata = 0;
@@ -573,7 +573,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         }
 
                         {
-                           //lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
 
                            switch (deflokdata)
                            {
@@ -645,9 +644,11 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         // Startbedingung, langsam anfahren bis speedlookup[1]
                         if((speedcode == 1) && !(lokstatus & (1<<STARTBIT))  && !(lokstatus & (1<<RUNBIT))) // noch nicht gesetzt  
                            {
+                              startspeed = speedlookup[STARTINDEX] ;
                               oldspeed = speedlookup[1] / 2;
                               newspeed = speedlookup[1]; //
-                              //lokstatus |= (1<<STARTBIT);
+                              lokstatus |= (1<<STARTBIT);
+
                            }
                         else
                            {
@@ -981,9 +982,7 @@ int main (void)
       
    //   else
          
-            // ************************************************
-            // speedchangetakt
-            // ************************************************
+           
       
       {
          {  
@@ -1026,6 +1025,9 @@ int main (void)
          
             loopcount1++;
 
+               // ************************************************
+               // speedchangetakt
+               // ************************************************
             if (loopcount1 >= speedchangetakt) // 150
             {
                 lcdcounter++;
@@ -1058,7 +1060,7 @@ int main (void)
                }
                else if((newspeed < speed)) // bremsen, speedintervall negativ
                {
-                  uint8_t bremsintervall = (speedintervall / 4 * 3);
+                  uint8_t bremsintervall = (speedintervall * 2);
                   if((speed > newspeed ) && (bremsintervall > 0))
                   {
                      speed += bremsintervall; // : war 2*speedintervall
