@@ -45,7 +45,7 @@
 */
 
 
- #define LCD_PORT                PORTD
+#define LCD_PORT                PORTD
 #define LCD_DDR					DDRD
 
 #define LCD_RSDS_PIN            3

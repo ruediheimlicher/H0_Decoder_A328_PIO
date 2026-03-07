@@ -8,103 +8,114 @@
 #ifndef defines_h
 #define defines_h
 
-#define MAX_EEPROM      512
+
+#define LOOPLEDPORT      PORTB
+#define LOOPLEDDDR      DDRB
+#define LOOPLED         3 // wie Motoraux
+
+#define INT0_RISING      0
+#define INT0_FALLING      1
+
+
 #define SHORT 0 // Abstand im doppelpaket
 #define LONG 2 // Abstand zwischen Daten
 
-#define OSZIPORT   PORTD      // Ausgang fuer Servo
-#define OSZIDDR      DDRD
+#define OSZIPORT   PORTB      // Ausgang fuer Servo
+#define OSZIDDR   DDRB
 
+#define OSZIA 3           // wie Motoraux
 
-
-#define INT_0     4
 
 #define PAKETA   0
 #define PAKETB   1
 
-#define OSZI_PULS_A        6
-#define OSZI_PULS_B        7
-#define SYNC               0
-
-#define OSZI_A_LO() OSZIPORT &= ~(1<<OSZI_PULS_A)
-#define OSZI_A_HI() OSZIPORT |= (1<<OSZI_PULS_A)
-#define OSZI_A_TOGG()  OSZIPORT ^= (1<<OSZI_PULS_A)
-
-#define SYNC_LO() OSZIPORT &= ~(1<<SYNC)
-
-
-#define OSZI_B_LO() OSZIPORT &= ~(1<<OSZI_PULS_B)
-#define OSZI_B_HI() OSZIPORT |= (1<<OSZI_PULS_B)
-#define OSZI_B_TOGG() OSZIPORT ^= (1<<OSZI_PULS_B)
-
-#define SYNC_HI() OSZIPORT |= (1<<SYNC)
-
+#define OSZIALO OSZIPORT &= ~(1<<OSZIA)
+#define OSZIAHI OSZIPORT |= (1<<OSZIA)
+#define OSZIATOG OSZIPORT ^= (1<<OSZIA)
 
 
 #define TESTPORT        PORTB
-#define TESTDDR         DDRB
-#define TESTPIN         PINB
+#define TESTDDR        DDRB
 
 #define TEST0     0
 #define TEST1     1
+#define TEST2     2
 
 
-// Bits displaydata
-#define SPEEDCODE 0
-#define SPEED     1
+//#define STATUSPORT   PORTC
+//#define STATUSDDR    DDRC
 
 
-#define STARTINDEX 3 // Index fuer Anlauf
 
-#define STARTKICK 10 // Verlaengerung erster Puls
+#define MOTORPORT   PORTB
+#define MOTORDDR    DDRB
+#define MOTORPIN    PINB
 
-// bits displaystatus
-#define DISPLAY_GO   7
+#define MOTORA_PIN      0
+#define MOTORB_PIN      1
 
-#define MAXFENSTERCOUNT  1000
 
-// Pins
+//PINS
+
+#define MOTORDIR      0
+#define MOTOROUT      1
+
+//
+#define MOTORA_PIN      0
+#define MOTORB_PIN      1
+
+
+#define MOTORINT0     2
+#define MOTORAUX      3
+#define LAMPE         4
+
+#define LAMPE_ON_RE44 MOTORPORT |= (1<<LAMPE)
+#define LAMPE_OFF_RE44 MOTORPORT &= ~(1<<LAMPE)
+
+#define LAMPE_ON_DIESEL MOTORPORT &= ~(1<<LAMPE)
+#define LAMPE_OFF_DIESEL MOTORPORT |= (1<<LAMPE)
+
+
+/*
+ case  LOK_TYP_DIESEL:
+   {
+      MOTORPORT |= (1<<LAMPE);
+   }break;
+   case  LOK_TYP_RE44:
+   {
+      MOTORPORT &= ~(1<<LAMPE);
+   }break;
+
+ 
+ */
+
+#define MOTORTEILER   1
+
+
+// Bits
 #define FUNKTIONOK   2
 #define ADDRESSOK    3
 #define DATAOK       4
 
-#define MOTORPORT   PORTC
-#define MOTORDDR    DDRC
-#define MOTORPIN    PINC
-
-#define MOTORA_PIN      2
-#define MOTORB_PIN      3
 
 // lokstatus-Bits
 #define FUNKTION     0
 #define OLDFUNKTION  1
 #define FUNKTIONSTATUS 2
 
-#define LEDPWM          50
 
 
-// loopstatus
-#define FIRSTRUNBIT     0
-#define LOOPBIT         1
+
+
 
 #define ADDRESSBIT   0
-#define STARTBIT        1 // Startimpuls
 #define DATABIT      2
-#define PROGBIT         3 // Programmiermodus
 #define FUNKTIONBIT  4
-#define RUNBIT  5
+#define OLDRICHTUNGBIT  5
 #define RICHTUNGBIT  6
-#define LOK_CHANGEBIT       7  
+//#define STARTDELAYBIT  7
 
-// defines fuer richtungstatus
-#define RICHTUNGCHANGESTARTBIT  0
-#define RICHTUNGCHANGEOKBIT  1
-
-
-#define STARTDELAY      100
-
-#define STARTWAIT 100
-
+//#define STARTDELAY 100
 
 #define TRIT0 0
 #define TRIT1 1
@@ -115,6 +126,7 @@
 #define HI_IMPULSDAUER 10
 #define LO_IMPULSDAUER 20
 
+#define INPIN     PINB
 #define INT0_START   0
 #define INT0_END   1
 #define INT0_WAIT 2
@@ -122,26 +134,12 @@
 #define INT0_PAKET_A 4
 #define INT0_PAKET_B 5
 
-
-#define LAMPEPORT PORTC
-#define LAMPEDDR  DDRC
-#define LAMPEPIN   PINC
-
-#define LED_CHANGEBIT       7  
-#define LAMPEA_PIN      1 
-#define LAMPEB_PIN      0
-
-
-#define LAMPE         3
-#define MEM           6 // Eingang fuer last richtung (Kondensator)
+#define INT0_RUN 7 // detektiert Datenfluss
 
 #define LAMPEMAX 0x40 // 50%
 
 #define FIRSTRUN_END 80
 
-#define FIRSTRUN_END 80
 
-#define MAXLOOP0 0x0AFE
-#define MAXLOOP1 0x0AFF
 
 #endif /* defines_h */
