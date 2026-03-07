@@ -47,7 +47,10 @@ BOD-Level auf 2.7V eingestellt. Efuse 0xFD
 
 //***********************************
 						
-uint8_t  LOK_ADRESSE = 0xCC;    //   11001100	Trinär mit Adresse 20 20 * DIP 1100
+uint8_t   LOK_ADRESSE = 0xCC;    //   11001100	Trinär mit Adresse 20 20 * DIP 1100
+
+//uint8_t LOK_ADRESSE = 0xBF; // Weiche 
+
 
 //	Trinaer-Adressen								
 //uint8_t  LOK_ADRESSE = 0x80;     //	1000 0000	Trinär mit Adresse 12 00 
@@ -491,6 +494,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
          }
          else // Paket gelesen
          {
+            OSZI_A_LO();
             // Paket A?
             if (INT0status & (1<<INT0_PAKET_A)) // erstes Paket, Werte speichern
             {
@@ -516,7 +520,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 
                if (lokadresseA && ((rawfunktionA == rawfunktionB) && (rawdataA == rawdataB) && (lokadresseA == lokadresseB))) // Lokadresse > 0 und Lokadresse und Data OK
                {
-                  //OSZI_A_LO();
+                  OSZI_A_LO();
                   if (lokadresseB == LOK_ADRESSE)
                   {   
                      // Daten uebernehmen
@@ -674,7 +678,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 
                      }
                      //SYNC_HI();
-                     //OSZI_A_HI();
+                     OSZI_A_HI();
                   }
                   else 
                   {
@@ -703,7 +707,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   //               TESTPORT |= (1<<TEST2);
                }
                //SYNC_HI();
-               //OSZI_B_HI();
+               OSZI_A_HI();
             } // End Paket B         
          }
       } // waitcounter > 2
@@ -795,8 +799,8 @@ int main (void)
 	// initialize the LCD 
 	lcd_initialize(LCD_FUNCTION_8x2, LCD_CMD_ENTRY_INC, LCD_CMD_ON);
    _delay_ms(100);
-	//lcd_puts("Guten Tag\0");
-	//_delay_ms(100);
+	lcd_puts("Guten Tag\0");
+	_delay_ms(1000);
 	//lcd_cls();
    //_delay_ms(100);
 	lcd_puts("H0-Decoder A328_PIO");
@@ -938,8 +942,8 @@ int main (void)
    }
    else
    {
-      lcd_putc('*');
-      lcd_puts("first");
+      //lcd_putc('*');
+      //lcd_puts("first");
       pwmpin = MOTORA_PIN;
       richtungpin = MOTORB_PIN;
       ledonpin = LAMPEA_PIN;

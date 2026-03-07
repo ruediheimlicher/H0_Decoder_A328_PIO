@@ -24,7 +24,7 @@
 
 #define OSZI_PULS_A        6
 #define OSZI_PULS_B        7
-#define SYNC               4
+#define SYNC               0
 
 #define OSZI_A_LO() OSZIPORT &= ~(1<<OSZI_PULS_A)
 #define OSZI_A_HI() OSZIPORT |= (1<<OSZI_PULS_A)
