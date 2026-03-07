@@ -126,7 +126,7 @@
 #define HI_IMPULSDAUER 10
 #define LO_IMPULSDAUER 20
 
-#define INPIN     PINB
+#define INPIN     PIND
 #define INT0_START   0
 #define INT0_END   1
 #define INT0_WAIT 2
