@@ -9,9 +9,9 @@
 #define defines_h
 
 
-#define LOOPLEDPORT      PORTB
+#define LOOPLEDPORT     PORTB
 #define LOOPLEDDDR      DDRB
-#define LOOPLED         3 // wie Motoraux
+#define LOOPLED         0 // wie Motoraux
 
 #define INT0_RISING      0
 #define INT0_FALLING      1
@@ -20,10 +20,11 @@
 #define SHORT 0 // Abstand im doppelpaket
 #define LONG 2 // Abstand zwischen Daten
 
-#define OSZIPORT   PORTB      // Ausgang fuer Servo
-#define OSZIDDR   DDRB
+#define OSZIPORT   PORTD      // Ausgang fuer Servo
+#define OSZIDDR   DDRD
 
-#define OSZIA 3           // wie Motoraux
+#define OSZIA 6 
+#define OSZIB 7           // wie Motoraux
 
 
 #define PAKETA   0
@@ -75,6 +76,16 @@
 #define LAMPE_ON_DIESEL MOTORPORT &= ~(1<<LAMPE)
 #define LAMPE_OFF_DIESEL MOTORPORT |= (1<<LAMPE)
 
+#define LAMPEPORT    PORTC
+#define LAMPEDDR     DDRC
+#define LAMPEPIN     PINC
+
+#define LAMPEA_PIN   2
+#define LAMPEB_PIN   3
+
+#define LED_CHANGEBIT    7
+
+#define MAX_EEPROM      512
 
 /*
  case  LOK_TYP_DIESEL:
@@ -108,14 +119,25 @@
 
 
 
-#define ADDRESSBIT   0
-#define DATABIT      2
-#define FUNKTIONBIT  4
-#define OLDRICHTUNGBIT  5
-#define RICHTUNGBIT  6
-//#define STARTDELAYBIT  7
+// defines fuer lokstatus
+#define ADDRESSBIT      0
+#define STARTBIT        1 // Startimpuls
+#define DATABIT         2
+#define PROGBIT         3 // Programmiermodus
+#define FUNKTIONBIT     4
+#define RUNBIT          5
+#define RICHTUNGBIT     6
+#define LOK_CHANGEBIT   7  
 
-//#define STARTDELAY 100
+#define STARTDELAY      100
+#define STARTWAIT       100
+
+// defines fuer richtungstatus
+#define RICHTUNGCHANGESTARTBIT  0
+#define RICHTUNGCHANGEOKBIT  1
+
+#define STARTINDEX 2 // Index fuer Anlauf
+
 
 #define TRIT0 0
 #define TRIT1 1
@@ -140,6 +162,6 @@
 
 #define FIRSTRUN_END 80
 
-
+#define FIRSTRUNBIT 0
 
 #endif /* defines_h */
