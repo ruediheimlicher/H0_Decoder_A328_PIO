@@ -20,6 +20,12 @@
 #include <stdint.h>
 #include <util/twi.h>
 
+#include <Wire.h>
+#include <U8g2lib.h>
+
+U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
+
+
 #include "lcd.c"
 
 #include "display.h"
@@ -780,7 +786,7 @@ int main (void)
    uint16_t loopcount1=0;
 
    uint16_t firstruncount0=0;
-   uint16_t firstruncount1=0;
+   //uint16_t firstruncount1=0;
 
    oldfunktion = 0x03; // 0x02
    oldlokdata = 0xCE;
