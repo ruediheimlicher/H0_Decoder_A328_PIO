@@ -950,7 +950,7 @@ int main (void)
    
 	while (1)
    {  
-      //OSZI_B_LO();
+      OSZI_B_TOGG();
       // Timing: loop: 40 us, takt 85us, mit if-teil 160 us
       wdt_reset();
         // firstrun
