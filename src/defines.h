@@ -15,20 +15,24 @@
 #define OSZIPORT   PORTD      // Ausgang fuer Servo
 #define OSZIDDR      DDRD
 
-
-
-#define INT_0     4
-
-#define PAKETA   0
-#define PAKETB   1
-
 #define OSZI_PULS_A        6
 #define OSZI_PULS_B        7
 #define SYNC               0
 
+
+
+#define PAKETA   0
+#define PAKETB   1
+
+
+
 #define OSZI_A_LO() OSZIPORT &= ~(1<<OSZI_PULS_A)
 #define OSZI_A_HI() OSZIPORT |= (1<<OSZI_PULS_A)
 #define OSZI_A_TOGG()  OSZIPORT ^= (1<<OSZI_PULS_A)
+
+#define OSZIALO OSZIPORT &= ~(1<<OSZIA)
+#define OSZIAHI OSZIPORT |= (1<<OSZIA)
+#define OSZIATOG OSZIPORT ^= (1<<OSZIA)
 
 #define SYNC_LO() OSZIPORT &= ~(1<<SYNC)
 
@@ -87,14 +91,14 @@
 #define FIRSTRUNBIT     0
 #define LOOPBIT         1
 
-#define ADDRESSBIT   0
+#define ADDRESSBIT      0
 #define STARTBIT        1 // Startimpuls
-#define DATABIT      2
+#define DATABIT         2
 #define PROGBIT         3 // Programmiermodus
-#define FUNKTIONBIT  4
-#define RUNBIT  5
-#define RICHTUNGBIT  6
-#define LOK_CHANGEBIT       7  
+#define FUNKTIONBIT     4
+#define RUNBIT          5
+#define RICHTUNGBIT     6
+#define LOK_CHANGEBIT   7  
 
 // defines fuer richtungstatus
 #define RICHTUNGCHANGESTARTBIT  0
@@ -103,8 +107,9 @@
 
 #define STARTDELAY      100
 
-#define STARTWAIT 100
+#define STARTWAIT       100
 
+#define STARTINDEX 2 // Index fuer Anlauf
 
 #define TRIT0 0
 #define TRIT1 1
@@ -131,6 +136,7 @@
 #define LAMPEA_PIN      1 
 #define LAMPEB_PIN      0
 
+#define MAX_EEPROM      512
 
 #define LAMPE         3
 #define MEM           6 // Eingang fuer last richtung (Kondensator)
@@ -139,9 +145,16 @@
 
 #define FIRSTRUN_END 80
 
-#define FIRSTRUN_END 80
 
 #define MAXLOOP0 0x0AFE
 #define MAXLOOP1 0x0AFF
+
+#define INT0_START   0
+#define INT0_END     1
+#define INT0_WAIT    2
+
+#define INT0_PAKET_A 4
+#define INT0_PAKET_B 5
+
 
 #endif /* defines_h */
