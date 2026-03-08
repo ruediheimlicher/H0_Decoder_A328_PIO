@@ -19,12 +19,8 @@
 #define OSZI_PULS_B        7
 #define SYNC               0
 
-
-
 #define PAKETA   0
 #define PAKETB   1
-
-
 
 #define OSZI_A_LO() OSZIPORT &= ~(1<<OSZI_PULS_A)
 #define OSZI_A_HI() OSZIPORT |= (1<<OSZI_PULS_A)
@@ -35,15 +31,11 @@
 #define OSZIATOG OSZIPORT ^= (1<<OSZIA)
 
 #define SYNC_LO() OSZIPORT &= ~(1<<SYNC)
-
+#define SYNC_HI() OSZIPORT |= (1<<SYNC)
 
 #define OSZI_B_LO() OSZIPORT &= ~(1<<OSZI_PULS_B)
 #define OSZI_B_HI() OSZIPORT |= (1<<OSZI_PULS_B)
 #define OSZI_B_TOGG() OSZIPORT ^= (1<<OSZI_PULS_B)
-
-#define SYNC_HI() OSZIPORT |= (1<<SYNC)
-
-
 
 #define TESTPORT        PORTB
 #define TESTDDR         DDRB
@@ -52,11 +44,9 @@
 #define TEST0     0
 #define TEST1     1
 
-
 // Bits displaydata
 #define SPEEDCODE 0
 #define SPEED     1
-
 
 #define STARTINDEX 3 // Index fuer Anlauf
 
@@ -91,6 +81,7 @@
 #define FIRSTRUNBIT     0
 #define LOOPBIT         1
 
+// lokstatus
 #define ADDRESSBIT      0
 #define STARTBIT        1 // Startimpuls
 #define DATABIT         2
@@ -104,12 +95,6 @@
 #define RICHTUNGCHANGESTARTBIT  0
 #define RICHTUNGCHANGEOKBIT  1
 
-
-#define STARTDELAY      100
-
-#define STARTWAIT       100
-
-#define STARTINDEX 2 // Index fuer Anlauf
 
 #define TRIT0 0
 #define TRIT1 1
@@ -127,7 +112,6 @@
 #define INT0_PAKET_A 4
 #define INT0_PAKET_B 5
 
-
 #define LAMPEPORT PORTC
 #define LAMPEDDR  DDRC
 #define LAMPEPIN   PINC
@@ -138,10 +122,9 @@
 
 #define MAX_EEPROM      512
 
-#define LAMPE         3
-#define MEM           6 // Eingang fuer last richtung (Kondensator)
+//#define LAMPE         3
 
-#define LAMPEMAX 0x40 // 50%
+//#define LAMPEMAX 0x40 // 50%
 
 #define FIRSTRUN_END 80
 
@@ -149,12 +132,7 @@
 #define MAXLOOP0 0x0AFE
 #define MAXLOOP1 0x0AFF
 
-#define INT0_START   0
-#define INT0_END     1
-#define INT0_WAIT    2
 
-#define INT0_PAKET_A 4
-#define INT0_PAKET_B 5
 
 
 #endif /* defines_h */
