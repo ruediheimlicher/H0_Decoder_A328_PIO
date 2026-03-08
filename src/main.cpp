@@ -327,7 +327,7 @@ ISR(INT0_vect)
       {
          //displaystatus &= ~(1<<DISPLAY_GO); // displayfenster end
          //SYNC_HI();
-         //OSZI_A_HI(); 
+         //OSZI_A_LO(); 
          INT0status |= (1<<INT0_START);
          INT0status |= (1<<INT0_WAIT); // delay, um Wert des Eingangs zum richtigen Zeitpunkt zu messen
          
@@ -472,9 +472,10 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
             }
 
          }
-         
+         //OSZI_A_HI(); 
          if (INT0status & (1<<INT0_PAKET_B))
          {
+            //OSZI_A_LO(); 
             /*
             if (tritposition < 8) // Adresse)
             {           
@@ -544,8 +545,9 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   rawdataB &= ~(1<<(tritposition-10)); // bit ist 0
                }
             }
+            //OSZI_A_HI();
          }
-         OSZI_A_HI();
+         //OSZI_A_HI();
          /*
           // Paket anzeigen
           if (INT0status & (1<<INT0_PAKET_B))
@@ -590,9 +592,10 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 
                if (lokadresseA && ((rawfunktionA == rawfunktionB) && (rawdataA == rawdataB) && (lokadresseA == lokadresseB))) // Lokadresse > 0 und Lokadresse und Data OK
                {
-                  //OSZI_A_LO();
+                  
                   if (lokadresseB == LOK_ADRESSE)
                   {   
+                     OSZI_A_LO();
                      // Daten uebernehmen
                      
                      lokstatus |= (1<<ADDRESSBIT);
@@ -777,7 +780,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   //               TESTPORT |= (1<<TEST2);
                }
                //SYNC_HI();
-               OSZI_A_HI();
+               //OSZI_A_HI();
             } // End Paket B         
          }
       } // waitcounter > 2
@@ -815,7 +818,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       
    } // input LO
    //OSZI_B_HI();pwmpin = MOTORA_PIN;
-}
+} // ISR(TIMER2_COMPA_vect)
 
 void displayfensterfunction(void)
 {
@@ -859,7 +862,8 @@ uint8_t EEPROM_read(uint16_t address) {
 // MARK: MAIN
 int main (void) 
 {
-   
+   MCUSR = 0;
+   wdt_disable();
 	slaveinit();
    
    int0_init();
@@ -1060,44 +1064,8 @@ int main (void)
       
       
          
-            displaystatus &= ~(1<<DISPLAY_GO);
-            // MARK: display       
-            if((displaystatus & (1<<DISPLAY_GO)) ) //&& displayfenstercounter)
-            {
-               displaystatus &= ~(1<<DISPLAY_GO);
-               //displayfenstercounter = 0;
-               //display_write_cmd(0xB1);
-               //display_write_data(0xB1);
-               //display_go_to(10,4);
-               //display_write_data(lcdcounter++);
-               
-               //display_write_int(lcdcounter,1);
-               
-               if (SHOWDISPLAY)
-               {
-                  //OSZI_B_LO();
-                  char_x=100;
-                  char_y = 1;
-                  //OSZI_B_HI();
-                  
-                  //display_write_int(lcdcounter,1);
-                  //display_write_sec_min(lcdcounter,1);
-                  //OSZI_B_HI();
-                  lcdcounter++;
-                  /*
-                   char_x = RANDLINKS;
-                   char_y = 3;
-                   display_write_str("speedcode:",1);
-                   display_write_int(displaydata[SPEEDCODE],1);
-                   display_write_str(" ",1);
-                   display_write_str("speed:",1);
-                   display_write_int(displaydata[SPEED],1);
-                   */
-               }
-            
-            } //  if((displaystatus & (1<<DISPLAY_GO)
          
-            loopcount1++;
+               loopcount1++;
 
                // ************************************************
                // speedchangetakt
@@ -1112,6 +1080,7 @@ int main (void)
                
                // MARK: SPEED VAR
                // speed var
+               
                if((newspeed > speed)) // beschleunigen, speedintervall positiv
                {
                   //OSZI_B_LO();
@@ -1157,7 +1126,7 @@ int main (void)
                } // newspeed < speed
                //OSZI_B_HI();
                // speed == 0 start
-
+               
                if (speed == 0) // Stillstand erreicht
                {
                   if(richtungstatus & (1<<RICHTUNGCHANGESTARTBIT))
@@ -1245,7 +1214,7 @@ int main (void)
                      
                         lokstatus &= ~(1<<RICHTUNGBIT);
 
-                     OSZI_A_HI();
+                     //OSZI_A_HI();
 
                   } // if(richtungstatus & (1<<RICHTUNGCHANGESTARTBIT))
 
@@ -1260,6 +1229,7 @@ int main (void)
 
 
                   // 250103 lampen
+               
                // Lampen einstellen
                if(ledstatus & (1<<LED_CHANGEBIT))
                {
@@ -1300,7 +1270,7 @@ int main (void)
          
          
          loopcount0++;
-         if (loopcount0>=refreshtakt)
+         if (loopcount0>= 4*refreshtakt)
          {
             //OSZI_B_LO();
             
@@ -1311,6 +1281,7 @@ int main (void)
             // Takt for display
              // MARK: LCD loop Display
             displaycounter1++;
+            displaycounter1 = 0;
             if (displaycounter1 > 0x02)
             {
                displaycounter1=0;
