@@ -20,10 +20,7 @@
 #include <stdint.h>
 #include <util/twi.h>
 
-#include <Wire.h>
-#include <U8g2lib.h>
-
-U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
+#include "oled.h"
 
 
 #include "lcd.c"
@@ -764,6 +761,7 @@ int main (void)
    MCUSR = 0;
    wdt_disable();
 	slaveinit();
+   oled_init();
    
    int0_init();
 	_delay_ms(10);
