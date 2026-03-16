@@ -685,7 +685,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            
                         } // if !(lokstatus & (1<<RICHTUNGBIT)
                         
-                        
                         /* TODO
                          else // repetition 0x03
                          {
