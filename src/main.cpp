@@ -1034,7 +1034,10 @@ int main (void)
                
             } //  if((displaystatus & (1<<DISPLAY_GO)
             
-            
+            if(speedcode == 3)
+            {
+
+            }
             
             if(lokstatus & (1<<FUNKTIONBIT))
             {
@@ -1085,55 +1088,7 @@ int main (void)
                
                // MARK: speed var
                // speed var
-               if((newspeed > speed)) // beschleunigen, speedintervall positiv
-               {
-                  //OSZI_B_LO();
-                  if(speed < (newspeed - speedintervall))
-                  {
-                     if((startspeed > speed) && (lokstatus & (1<<STARTBIT))) // Startimpuls
-                     {
-                        speed = startspeed;
-                        lokstatus &= ~(1<<STARTBIT);
-                     }
-                     else 
-                     {
-                        speed += speedintervall;
-                     }
-                  }
-                  else 
-                  {
-                     speed = newspeed;
-                  }
-                  //OSZI_B_HI();
-               }
-               else if((newspeed < speed)) // bremsen, speedintervall negativ
-               {
-                  //OSZI_A_LO();
-                  
-                  //if((speed > newspeed ) && ((speed + 2*speedintervall) > 0))
-                  
-                  if((speed + 2*speedintervall) > 0)
-                  {
-                     speed += 2*speedintervall;
-                     
-                     if(speed < minspeed/2)
-                     {
-                        if(newspeed == 0) // Motor soll abstellen
-                        {
-                           //OSZI_A_HI();
-                           speed = 0; // Motor OFF
-                        }
-                     }
-                     
-                     
-                  }
-                  else 
-                  {
-                     speed = newspeed;
-                     
-                  }
-                  //OSZI_A_HI();
-               }
+               
                displaydata[SPEED] = speed;
                // end speed var
                //OSZI_B_HI();
@@ -1158,46 +1113,8 @@ int main (void)
                counter++;
             }
             
-            if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
-            {
-               if(pwmpin == MOTORA_PIN)
-               {
-                  pwmpin = MOTORB_PIN;
-                  richtungpin = MOTORA_PIN;
-                  //ledonpin = LAMPEB_PIN;
-                  // ledoffpin = LAMPEA_PIN;
-                  if(lokstatus & (1<<FUNKTIONBIT))
-                  {
-                     LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                     LAMPEPORT |= (1<<LAMPEA_PIN); // Lampe A OFF
-                  }
-                  else
-                  {
-                     // beide lampen OFF
-                     LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                     LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
-                  }
-               }
-               else // auch default
-               {
-                  pwmpin = MOTORA_PIN;
-                  richtungpin = MOTORB_PIN;
-                   if(lokstatus & (1<<FUNKTIONBIT))
-                  {
-                     LAMPEPORT |= (1<<LAMPEB_PIN); // Lampe B OFF
-                     LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
-                  }
-                  else 
-                  {
-                     // beide lampen OFF
-                     LAMPEPORT &= ~(1<<LAMPEB_PIN); // Lampe B OFF
-                     LAMPEPORT &= ~(1<<LAMPEA_PIN); // Lampe A OFF
-                  }
-                  
-               }
-               MOTORPORT |= (1<<richtungpin); // Richtung setzen
-               lokstatus &= ~(1<<LOK_CHANGEBIT);
-            } // if changebit
+            //if(lokstatus & (1<<LOK_CHANGEBIT)) // Motor-Pins tauschen
+            /*
             // Lampen einstellen
             if(ledstatus & (1<<LED_CHANGEBIT))
             {
@@ -1215,19 +1132,10 @@ int main (void)
                }
                ledstatus &= ~(1<<LED_CHANGEBIT);
             }
+            */
             
             
             
-            /*        
-             if (deflokadresse == LOK_ADRESSE)
-             {
-             //OSZIATOG;
-             }
-             else
-             {
-             //OSZIAHI;
-             }
-             */   
             //OSZI_B_HI();
          }  // loopcount0>=refreshtakt
          OSZI_B_HI();
