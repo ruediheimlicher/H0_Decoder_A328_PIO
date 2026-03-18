@@ -710,7 +710,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                               case 0:
                                  
                                  speedcode = 0;
-                                 lokstatus &= ~(1<<STARTBIT);
+                                 //lokstatus &= ~(1<<STARTBIT);
                                  break;
                               case 0x0C:
                                  
