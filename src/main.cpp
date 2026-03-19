@@ -22,9 +22,8 @@
 
 #include "lcd.c"
 
+//#include <Wire.h>
 //#include <LiquidCrystal_I2C.h>
-
-
 //#include "display.c"
 
 #include "text.h"
@@ -42,9 +41,9 @@
 //***********************************
 						
 uint8_t  LOK_ADRESSE = 0x7F; //	11001100	Trinär
-uint8_t WEICHENCODE = 3;
+uint8_t WEICHENCODE = 7;
 // test
-//uint8_t  LOK_ADRESSE = 0xCC; //   11001100   Trinär
+//uint8_t  LOK_ADRESSE = 0x0F; //   11001100   Trinär
 
 //									
 //***********************************
@@ -214,7 +213,7 @@ uint8_t speedlookuptable[10][15] =
    {0,42,45,50,57,65,75,87,101,116,134,153,173,196,220},
    {0,42,45,51,58,68,79,93,108,125,144,165,188,213,240}
 };
-
+uint8_t speedcodelookuptable[15] = {0x3,0x0C,0x0F,0x30,0x33,0x3C,0x3F,0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF};
 
 volatile uint8_t   lastDIR =  0;
 uint8_t loopledtakt = 0x40;
@@ -343,14 +342,7 @@ void slaveinit(void)
    PORTC |= (1<<4);   //   ON
 */
    
-   if (DISPLAY)
-   {
-
-      //spi_init();
-     // _delay_ms(5);
-      //display_init();
-     // _delay_ms(5);
-   }
+   
    
    
    //LOOPLEDPORT |=(1<<LOOPLED);
@@ -499,7 +491,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
    if (INT0status & (1<<INT0_WAIT))
    {
       waitcounter++; 
-      if (waitcounter >1)// Impulsdauer > minimum, nach einer gewissen Zeit den Stautus abfragen
+      if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Stautus abfragen
       {
          
          //OSZI_A_LO();
@@ -673,7 +665,60 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      }
                      
                      
-                     // Richtung
+                     switch (deflokdata)
+                        {
+                           case 0x03:
+                              
+                              speedcode = 0;
+                              
+                              break;
+                           case 0x0C:
+                              speedcode = 1;
+                              break;
+                           case 0x0F:                             
+                              speedcode = 2;
+                              break;
+                           case 0x30:
+                              speedcode = 3;
+                              break;
+                           case 0x33:
+                              speedcode = 4;
+                              break;
+                           case 0x3C:
+                              speedcode = 5;
+                              break;
+                           case 0x3F:
+                              speedcode = 6;
+                              break;
+                           case 0xC0:
+                              speedcode = 7;
+                              break;
+                           case 0xC3:
+                              speedcode = 8;
+                              break;
+                           case 0xCC:
+                              speedcode = 9;
+                              break;
+                           case 0xCF:
+                              speedcode = 10;
+                              break;
+                           case 0xF0:
+                              speedcode = 11;
+                              break;
+                           case 0xF3:
+                              speedcode = 12;
+                              break;
+                           case 0xFC:
+                              speedcode = 13;
+                              break;
+                           case 0xFF:
+                              speedcode = 14;
+                              break;
+                           default:
+                              speedcode = 0;
+                              break;
+                              
+                        } // switch (deflokdata)    
 
                      //SYNC_HI();
                      OSZI_B_HI();
@@ -753,29 +798,15 @@ void displayfensterfunction(void)
    _delay_ms(2);
 }
 
+//LiquidCrystal_I2C lcd(0x27, 16, 2); // Adresse anpassen
+
 
 int main (void) 
 {
    
    
 	slaveinit();
-   
- //  int0_init();
-	
-	/* initialize the LCD */
-	//lcd_initialize(LCD_FUNCTION_8x2, LCD_CMD_ENTRY_INC, LCD_CMD_ON);
 
-	//lcd_puts("Guten Tag\0");
-	//_delay_ms(2000);
-	//lcd_cls();
-	//lcd_puts("H0-Decoder A328");
-	
-   
-   
-   //   timer2(4);
-	
-	//initADC(TASTATURPIN);
-	
 	
 	//uint16_t loopcount0=0;
    uint16_t loopcount0=0;
@@ -795,22 +826,7 @@ int main (void)
    
    sei();
    
-/*
-   lcd_gotoxy(0,1);
-   lcd_puts("ADR ");
-   lcd_puthex(LOK_ADRESSE);
-*/   
-   //lcd_gotoxy(0,2);
-   //lcd_puts(" adrIN");
 
-   //lcd_gotoxy(0,2);
-   
-   //lcd_gotoxy(0,3);
-   //lcd_puts("data ");
-   
-   
- //  TWI_Init();
- //  _delay_ms(100);
    
    uint8_t counter = 0;
    uint16_t lcdcounter = 0;
@@ -834,82 +850,31 @@ int main (void)
          firstruncount0++;
          if (firstruncount0>=0x0A)
          {
-            //OSZI_B_LO();
-            //OSZI_A_LO();
-            //LOOPLEDPORT ^= (1<<LOOPLED); 
-            
+
             firstruncount0=0;
             
-            //LOOPLEDPORT ^= (1<<LOOPLED); 
-            
-            
-            // Takt for display
             firstruncount1++;
             
             if (firstruncount1 >= 0xF0)
             {
-               //OSZI_A_LO();
-               //LOOPLEDPORT ^= (1<<LOOPLED);
+              
                 int0_init();
                
                _delay_ms(2);
                 timer2(4);
-               sei();
+               //sei();
                loopstatus &= ~(1<<FIRSTRUNBIT);
-               
-               //loopstatus |= (1<<RUNBIT);
-               //LOOPLEDPORT |=(1<<LOOPLED);
-               //LOOPLEDDDR |= (1<<LOOPLED);
-             
-               //OSZI_A_HI();
             }
-            //OSZI_A_HI();
          }
          
       }// end firstrun
       
    
-   
-
-   
-   
       
-      
-      
-      
-      // MARK: display       
-      if((displaystatus & (1<<DISPLAY_GO)) ) //&& displayfenstercounter)
-      {
-         displaystatus &= ~(1<<DISPLAY_GO);
-         /*
-         //    displayfenstercounter = 0;
-         //display_write_cmd(0xB1);
-         //display_write_data(0xB1);
-         //display_go_to(10,4);
-         //display_write_data(lcdcounter++);
-         
-         //display_write_int(lcdcounter,1);
-         
-         if (DISPLAY)
-         {
-            OSZI_B_LO();
-            char_x=100;
-            char_y = 1;
-            //OSZI_B_HI();
-            
-            //display_write_int(lcdcounter,1);
-            //display_write_sec_min(lcdcounter,1);
-            OSZI_B_HI();
-            lcdcounter++;
-      
-            
-         }
-         */
-         
-      } //  if((displaystatus & (1<<DISPLAY_GO)
       
       //if(deflokdata == 0x0C)
-      if(deflokdata == WEICHENCODE)
+      //if(deflokdata == WEICHENCODE)
+      if(deflokdata == speedcodelookuptable[WEICHENCODE])
       {
          LAMPEPORT |= (1<<LAMPEA_PIN);
          if(lokstatus & (1<<FUNKTIONBIT))
@@ -926,49 +891,7 @@ int main (void)
          LAMPEPORT &= ~(1<<LAMPEA_PIN);
       }
       
-      
-      
-      if(lokstatus & (1<<FUNKTIONBIT))
-      {
-         /*
-            if(dimmcounter == 3)
-            {
-            LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON
-            
-            }
-            dimmcounter++;
-            if(dimmcounter > 32)
-            {
-            LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
-            dimmcounter = 0;
-            }
-            */
-      }
-      
-      //continue;
-      
-      loopcount1++;
-      if (loopcount1 >= speedchangetakt)
-      {
-         
-         lcdcounter++;
-         //LOOPLEDPORT ^= (1<<LOOPLED); // Kontrolle lastDIR
-         loopcount1 = 0;
-         //OSZIATOG;
-         
-         //OSZI_B_LO();
-         
-         // MARK: speed var
-         // speed var
-         
-         displaydata[SPEED] = speed;
-         // end speed var
-         //OSZI_B_HI();
-      } // loopcount1 >= speedchangetakt
-      
-      // Source OK
-   
-   
+  
       loopcount0++;
       if (loopcount0>=refreshtakt)
       {
