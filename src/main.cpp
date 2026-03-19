@@ -22,6 +22,8 @@
 
 #include "lcd.c"
 
+//#include <LiquidCrystal_I2C.h>
+
 
 //#include "display.c"
 
@@ -830,7 +832,7 @@ int main (void)
       if(loopstatus & (1<<FIRSTRUNBIT))
       {
          firstruncount0++;
-         if (firstruncount0>=0x8FA)
+         if (firstruncount0>=0x0A)
          {
             //OSZI_B_LO();
             //OSZI_A_LO();
@@ -906,8 +908,8 @@ int main (void)
          
       } //  if((displaystatus & (1<<DISPLAY_GO)
       
-      if(deflokdata == 0x30)
-      //if(speedcode == WEICHENCODE)
+      //if(deflokdata == 0x0C)
+      if(deflokdata == WEICHENCODE)
       {
          LAMPEPORT |= (1<<LAMPEA_PIN);
          if(lokstatus & (1<<FUNKTIONBIT))
