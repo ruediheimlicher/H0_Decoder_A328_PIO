@@ -672,137 +672,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      
                      
                      // Richtung
-                     if (deflokdata == 0x03) // Wert 1, > Richtung togglen
-                     {
-                        if (!(lokstatus & (1<<RICHTUNGBIT))) // Start Richtungswechsel
-                        {
-                           lokstatus |= (1<<RICHTUNGBIT); // Vorgang starten, speed auf 0 setzen
-                           richtungcounter = 0;
-                           //oldspeed = speed; // behalten
-                           //speed = 0;
-                           
-                           lokstatus |= (1<<LOK_CHANGEBIT); // lok-change setzen
-                           ledstatus |= (1<<LED_CHANGEBIT); // led-change setzen
-                           
-                        } // if !(lokstatus & (1<<RICHTUNGBIT)
-                        
-                        /* TODO
-                         else // repetition 0x03
-                         {
-                         richtungcounter++;
-                         if (richtungcounter > 4)
-                         {
-                         lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
-                         richtungcounter = 0;
-                         }
-                         }
-                         */
-                     } // deflokdata == 0x03
-                     else 
-                     {  
-                        
-                        lokstatus &= ~(1<<RICHTUNGBIT); // Vorgang Richtungsbit wieder beenden, 
-                        
-                        {
-                           
-                           
-                           switch (deflokdata)
-                           {
-                              case 0:
-                                 
-                                 speedcode = 0;
-                                 //lokstatus &= ~(1<<STARTBIT);
-                                 break;
-                              case 0x0C:
-                                 
-                                 speedcode = 1;
-                                 break;
-                              case 0x0F:
-                                 
-                                 speedcode = 2;
-                                 break;
-                              case 0x30:
-                                 speedcode = 3;
-                                 //LAMPEPORT ^= (1<<LAMPEA_PIN);
-                                 break;
-                              case 0x33:
-                                 speedcode = 4;
-                                 break;
-                              case 0x3C:
-                                 speedcode = 5;
-                                 break;
-                              case 0x3F:
-                                 speedcode = 6;
-                                 break;
-                              case 0xC0:
-                                 speedcode = 7;
-                                 break;
-                              case 0xC3:
-                                 speedcode = 8;
-                                 break;
-                              case 0xCC:
-                                 speedcode = 9;
-                                 break;
-                              case 0xCF:
-                                 speedcode = 10;
-                                 break;
-                              case 0xF0:
-                                 speedcode = 11;
-                                 break;
-                              case 0xF3:
-                                 speedcode = 12;
-                                 break;
-                              case 0xFC:
-                                 speedcode = 13;
-                                 break;
-                              case 0xFF:
-                                 speedcode = 14;
-                                 break;
-                              default:
-                                 speedcode = 0;
-                                 break;
-                                 
-                           }
-                           //OSZI_B_HI();
-                           // MARK: speed                            
-                           newspeed = speedlookup[speedcode]; // zielwert
-                           
-                           // Startbedingung
-                           if(speedcode && (speedcode ==1) && !(lokstatus & (1<<STARTBIT))  && !(lokstatus & (1<<RUNBIT))) // noch nicht gesetzt
-                           {
-                              
-                              startspeed = speedlookup[speedcode] + STARTIMPULS; // kleine Zugabe
-                              
-                              lokstatus |= (1<<STARTBIT);
-                              
-                           }// ok
-                           //
-                           
-                           oldspeed = speed; // behalten
-                           
-                           
-                           speedintervall = (newspeed - speed)>>2; // 4 teile
-                           if((speedintervall == 0) )
-                           {
-                              //OSZI_B_LO();
-                              speedintervall = 1;
-                              //OSZI_B_HI();
-                           }
-                           
-                           
-                           
-                           if(speedcode > 0)
-                           {
-                              lokstatus |= (1<<RUNBIT); // lok in bewegung
-                           }
-                           else
-                           {
-                              lokstatus &= ~(1<<RUNBIT); // lok steht still
-                              
-                           }
-                           
-                        }
-                     }
+
                      //SYNC_HI();
                      OSZI_B_HI();
                   }
@@ -1036,8 +906,8 @@ int main (void)
          
       } //  if((displaystatus & (1<<DISPLAY_GO)
       
-      //if(deflokdata & (1<<3))
-      if(speedcode == WEICHENCODE)
+      if(deflokdata == 0x30)
+      //if(speedcode == WEICHENCODE)
       {
          LAMPEPORT |= (1<<LAMPEA_PIN);
          if(lokstatus & (1<<FUNKTIONBIT))
