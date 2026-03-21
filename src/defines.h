@@ -115,19 +115,19 @@
 #define INT0_PAKET_B 5
 
 
-#define LAMPEPORT PORTC
-#define LAMPEDDR  DDRC
-#define LAMPEPIN   PINC
+#define WEICHEPORT PORTC
+#define WEICHEDDR  DDRC
+#define WEICHEPIN   PINC
 
 #define LED_CHANGEBIT       7  
-#define LAMPEA_PIN      1 
-#define LAMPEB_PIN      0
+#define WEICHEA_PIN      1 
+#define WEICHEB_PIN      0
 
 
-#define LAMPE         3
+#define WEICHE         3
 #define MEM           6 // Eingang fuer last richtung (Kondensator)
 
-#define LAMPEMAX 0x40 // 50%
+#define WEICHEMAX 0x40 // 50%
 
 #define FIRSTRUN_END 80
 

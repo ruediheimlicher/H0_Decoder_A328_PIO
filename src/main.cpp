@@ -172,8 +172,8 @@ volatile uint8_t   ledpwm = 0x40; // LED PWM 50%
 volatile uint8_t   ledstatus=0; // status LED
 
 
-volatile uint8_t   ledonpin = LAMPEA_PIN; // Stirnlampe ON
-volatile uint8_t   ledoffpin = LAMPEB_PIN; // Stirnlampe OFF
+volatile uint8_t   ledonpin = WEICHEA_PIN; // Stirnlampe ON
+volatile uint8_t   ledoffpin = WEICHEB_PIN; // Stirnlampe OFF
 
 // ***
 volatile uint8_t   speed = 0;
@@ -297,11 +297,11 @@ void slaveinit(void)
    MOTORDDR |= (1<<MOTORB_PIN);  // Output Motor B 
    MOTORPORT |= (1<<MOTORB_PIN); // HI
    
-   LAMPEDDR |= (1<<LAMPEA_PIN);  // Lampe A
-   LAMPEPORT &= ~(1<<LAMPEA_PIN); // LO
+   WEICHEDDR |= (1<<WEICHEA_PIN);  // Lampe A
+   WEICHEPORT &= ~(1<<WEICHEA_PIN); // LO
     
-   LAMPEDDR |= (1<<LAMPEB_PIN);  // Lampe B
-   LAMPEPORT &= ~(1<<LAMPEB_PIN); // LO
+   WEICHEDDR |= (1<<WEICHEB_PIN);  // Lampe B
+   WEICHEPORT &= ~(1<<WEICHEB_PIN); // LO
    /*
    for(uint8_t i=0;i<2;i++)
    {
@@ -321,8 +321,8 @@ void slaveinit(void)
    /*
    pwmpin = MOTORA_PIN;
    richtungpin = MOTORB_PIN;
-   ledonpin = LAMPEA_PIN;
-   ledoffpin = LAMPEB_PIN;
+   ledonpin = WEICHEA_PIN;
+   ledoffpin = WEICHEB_PIN;
    */
    uint8_t i = 0;
    for (i=0;i<15;i++)
@@ -447,13 +447,13 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
     
     if(dimmcounter > LEDPWM)
     {
-    LAMPEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
+    WEICHEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
     
     }
     
     if(dimmcounter > 253)
     {
-    LAMPEPORT |= (1<<ledonpin); // Lampe-PWM  ON, neuer Impuls
+    WEICHEPORT |= (1<<ledonpin); // Lampe-PWM  ON, neuer Impuls
     dimmcounter = 0;
     }
     
@@ -876,19 +876,19 @@ int main (void)
       //if(deflokdata == WEICHENCODE)
       if(deflokdata == speedcodelookuptable[WEICHENCODE])
       {
-         LAMPEPORT |= (1<<LAMPEA_PIN);
+         WEICHEPORT |= (1<<WEICHEA_PIN);
          if(lokstatus & (1<<FUNKTIONBIT))
          {
-            LAMPEPORT |= (1<<LAMPEB_PIN);
+            WEICHEPORT |= (1<<WEICHEB_PIN);
          }
          else
          {
-            LAMPEPORT &= ~(1<<LAMPEB_PIN);
+            WEICHEPORT &= ~(1<<WEICHEB_PIN);
          }
       }
       else
       {
-         LAMPEPORT &= ~(1<<LAMPEA_PIN);
+         WEICHEPORT &= ~(1<<WEICHEA_PIN);
       }
       
   
