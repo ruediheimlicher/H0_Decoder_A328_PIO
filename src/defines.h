@@ -123,6 +123,14 @@
 #define WEICHEA_PIN      1 
 #define WEICHEB_PIN      0
 
+#define WEICHEDIP_PORT    PORTD
+#define WEICHEDIP_DDR     DDRD
+#define WEICHEDIP_PIN     PIND
+#define WEICHEDIP0        3
+#define WEICHEDIP1        4
+#define WEICHEDIP2        5
+#define WEICHEDIP3        2
+
 
 #define WEICHE         3
 #define MEM           6 // Eingang fuer last richtung (Kondensator)

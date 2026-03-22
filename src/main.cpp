@@ -41,7 +41,7 @@
 //***********************************
 						
 uint8_t  LOK_ADRESSE = 0x7F; //	11001100	Trinär
-uint8_t WEICHENCODE = 7;
+uint8_t WEICHENCODE = 0;
 // test
 //uint8_t  LOK_ADRESSE = 0x0F; //   11001100   Trinär
 
@@ -64,9 +64,9 @@ uint8_t WEICHENCODE = 7;
 #define DATAPIN  2 
 
 
-#define LOOPLEDPORT		PORTD
-#define LOOPLEDDDR      DDRD
-#define LOOPLED			5
+#define LOOPLEDPORT		PORTB
+#define LOOPLEDDDR      DDRB
+#define LOOPLED			0
 
 #define INT0_RISING	   0
 #define INT0_FALLING		1
@@ -192,7 +192,7 @@ volatile uint16_t	taktimpuls=0;
 
 volatile uint16_t   motorPWM=0;
 
-
+volatile uint8_t weichenstatus = 0;
 
 
 volatile uint8_t   taskcounter = 0;
@@ -277,7 +277,14 @@ void slaveinit(void)
 	//LOOPLEDPORT |=(1<<LOOPLED);
    LOOPLEDDDR |= (1<<LOOPLED);
    
-  
+   WEICHEDIP_DDR &= ~(1<<WEICHEDIP0);
+   WEICHEDIP_DDR &= ~(1<<WEICHEDIP1);
+   WEICHEDIP_DDR &= ~(1<<WEICHEDIP2);
+
+   WEICHEDIP_PORT |= (1<<WEICHEDIP0);
+   WEICHEDIP_PORT |= (1<<WEICHEDIP1);
+   WEICHEDIP_PORT |= (1<<WEICHEDIP2);
+
   
 
   
@@ -874,6 +881,53 @@ int main (void)
       
       //if(deflokdata == 0x0C)
       //if(deflokdata == WEICHENCODE)
+
+      // dip lesen
+      WEICHENCODE = 0;
+
+      if(WEICHEDIP_PIN & (1<<WEICHEDIP0))
+      {
+         WEICHENCODE |= (1<<0);
+      }
+      else
+      {
+         WEICHENCODE &= ~(1<<0);
+      }
+      if(WEICHEDIP_PIN & (1<<WEICHEDIP1))
+      {
+         WEICHENCODE |= (1<<1);
+      }
+      else
+      {
+         WEICHENCODE &= ~(1<<1);
+      }
+      if(WEICHEDIP_PIN & (1<<WEICHEDIP2))
+      {
+         WEICHENCODE |= (1<<2);
+      }
+      else
+      {
+         WEICHENCODE &= ~(1<<2);
+      }
+      
+      /*
+      if(WEICHEDIP_PIN & (1<<WEICHEDIP2))
+      {
+         WEICHENCODE |= (1<<2);
+      }
+      else{
+         WEICHENCODE &= ~(1<<2);
+      }  
+      */    
+     //WEICHENCODE &= ~(1<<3); // Bit 3 ist 0
+     // WEICHENCODE -= 1;
+     //WEICHENCODE = 4;
+
+     WEICHENCODE = 0;
+     WEICHENCODE = WEICHEDIP_PIN & 0x38;
+      WEICHENCODE >>= 3;
+      //WEICHENCODE += 1;
+
       if(deflokdata == speedcodelookuptable[WEICHENCODE])
       {
          WEICHEPORT |= (1<<WEICHEA_PIN);
