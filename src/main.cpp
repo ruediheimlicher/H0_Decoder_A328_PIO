@@ -807,6 +807,66 @@ void displayfensterfunction(void)
 
 //LiquidCrystal_I2C lcd(0x27, 16, 2); // Adresse anpassen
 
+void I2C_init()
+{
+  TWBR = 72;    
+  TWSR |= (1<<0);                         /* prescaler 4*/
+   TWSR |= (1<<1);                                  // Bit rate
+  //TWSR = TWSR & (0xFC);                        // Prescale value - bit 0,1 (0, 0 = value of 1)
+  TWCR |= (1 << TWEN); 
+}
+
+inline void Clear_Start()                                    
+{
+  TWCR ^= (1 << TWSTA);    
+  _delay_ms(1);                                     // delay to give TWI time to finish current action         
+}  
+
+void I2c_datawrite(unsigned char d)            
+{  
+  TWDR = d;
+  TWCR |= (1 << TWINT) ; 
+  _delay_ms(1);                                     // delay to give TWI and LCD-en to finish current action 
+  
+/*if((TWSR & 0xFC) == 0x18) 
+Serial.println("SLA+W sent and ACK received");
+if((TWSR & 0xFC) == 0x28) 
+Serial.println("Data byte sent and ACK received");*/
+}
+
+void I2c_write(unsigned char d, unsigned char a, unsigned char b)
+{
+  TWCR |= (1 << TWSTA) | (1 << TWINT) ;          // START condition     
+  Clear_Start(); 
+    
+/*if((TWSR & 0xFC) == 0x08) 
+Serial.println("Start Transmitted");*/                
+
+  I2c_datawrite(LCDaddr << 1);                   // 0th bit will always be zero in ATMega328P              
+  /* data write */ 
+  I2c_datawrite(0x00);                        
+  I2c_datawrite((d & 0xF0) | a);                                  
+  I2c_datawrite((d & 0xF0) | b);               
+  I2c_datawrite(((d & 0x0F) << 4) | a);        
+  I2c_datawrite(((d & 0x0F) << 4) | b);        
+  /* data write */
+  
+  TWCR |= (1 << TWSTO) | (1 << TWINT) ;          // STOP condition
+  _delay_ms(10);  
+}
+
+ void LCD_init()
+ {
+  _delay_ms(20);                         
+  I2c_write_LCDcmd(0x01);            
+  I2c_write_LCDcmd(0x02);            
+  I2c_write_LCDcmd(0x28);            
+  I2c_write_LCDcmd(0x0C);            
+  I2c_write_LCDcmd(0x80);      
+ }
+
+
+
 
 int main (void) 
 {
@@ -838,6 +898,10 @@ int main (void)
    uint8_t counter = 0;
    uint16_t lcdcounter = 0;
     
+   //I2C_init();
+   //LCD_init();
+
+
    if (DISPLAY)
    {
      // setlogscreen();
@@ -960,6 +1024,13 @@ int main (void)
             displaycounter1=0;
             LOOPLEDPORT ^= (1<<LOOPLED);
             counter++;
+            //LCD_init();
+            I2c_write_LCDcmd(0x80);            
+            for(uint8_t i = 0; i <= 6; i ++)
+            {
+                  I2c_write_LCDdata(32+i);
+            }
+            
          }
          
 

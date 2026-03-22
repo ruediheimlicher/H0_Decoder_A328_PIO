@@ -14,6 +14,11 @@
 #define OSZIPORT   PORTD      // Ausgang fuer Servo
 #define OSZIDDR      DDRD
 
+#define SDA A4                   // Built-in SDA I2C pin
+#define SCL A5                   // Built-in SCL I2C pin
+#define LCDaddr 0x27   
+#define I2c_write_LCDcmd(x) I2c_write(x, 0x0C, 0x08)
+#define I2c_write_LCDdata(x) I2c_write(x, 0x0D, 0x09)
 
 
 #define INT_0     4
