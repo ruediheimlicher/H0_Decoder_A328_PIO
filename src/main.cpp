@@ -194,6 +194,8 @@ volatile uint16_t   motorPWM=0;
 
 volatile uint8_t weichenstatus = 0;
 
+volatile uint16_t weichenimpulscounter = 0;
+
 
 volatile uint8_t   taskcounter = 0;
 
@@ -780,13 +782,19 @@ int main (void)
       if(deflokdata == speedcodelookuptable[WEICHENCODE])
       {
          WEICHEPORT |= (1<<WEICHEA_PIN); // Start Bewegung
+         weichenstatus |= (1<<WEICHESTART);
+
          if(lokstatus & (1<<FUNKTIONBIT)) // Weiche auf Ablenkung stellen
          {
             WEICHEPORT |= (1<<WEICHEB_PIN); 
+            weichenstatus |= (1<<ABLENKUNG);
+
          }
          else // Weiche auf Gerade stellen
          {
             WEICHEPORT &= ~(1<<WEICHEB_PIN);
+            weichenstatus |= (1<<GERADE);
+
          }
       }
       else
