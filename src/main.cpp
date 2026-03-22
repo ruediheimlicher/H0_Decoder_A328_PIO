@@ -611,6 +611,13 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         }
                      }
                      
+                     // Weichennummer checken
+                     WEICHENCODE = 0xFF;
+                     WEICHENCODE = WEICHEDIP_PIN & 0x38;
+     
+                     WEICHENCODE >>= 3;
+                     WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
+
                      OSZI_B_HI();
                   }
                   else 
@@ -760,75 +767,31 @@ int main (void)
       }// end firstrun
       
    
-      
-      
-      //if(deflokdata == 0x0C)
-      //if(deflokdata == WEICHENCODE)
 
       // dip lesen
       /*
-      WEICHENCODE = 0;
-
-      if(WEICHEDIP_PIN & (1<<WEICHEDIP0))
-      {
-         WEICHENCODE |= (1<<0);
-      }
-      else
-      {
-         WEICHENCODE &= ~(1<<0);
-      }
-      if(WEICHEDIP_PIN & (1<<WEICHEDIP1))
-      {
-         WEICHENCODE |= (1<<1);
-      }
-      else
-      {
-         WEICHENCODE &= ~(1<<1);
-      }
-      if(WEICHEDIP_PIN & (1<<WEICHEDIP2))
-      {
-         WEICHENCODE |= (1<<2);
-      }
-      else
-      {
-         WEICHENCODE &= ~(1<<2);
-      }
-      */
-      /*
-      if(WEICHEDIP_PIN & (1<<WEICHEDIP2))
-      {
-         WEICHENCODE |= (1<<2);
-      }
-      else{
-         WEICHENCODE &= ~(1<<2);
-      }  
-      */    
-     //WEICHENCODE &= ~(1<<3); // Bit 3 ist 0
-     // WEICHENCODE -= 1;
-    
-
      WEICHENCODE = 0xFF;
      WEICHENCODE = WEICHEDIP_PIN & 0x38;
      
       WEICHENCODE >>= 3;
       WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
-      
+      */      
       // {0,0x3,0x0C,0x0F,0x30,0x33,0x3C,0x3F,0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF};
       if(deflokdata == speedcodelookuptable[WEICHENCODE])
       {
-         WEICHEPORT |= (1<<WEICHEA_PIN);
-         if(lokstatus & (1<<FUNKTIONBIT))
+         WEICHEPORT |= (1<<WEICHEA_PIN); // Start Bewegung
+         if(lokstatus & (1<<FUNKTIONBIT)) // Weiche auf Ablenkung stellen
          {
-            WEICHEPORT |= (1<<WEICHEB_PIN);
+            WEICHEPORT |= (1<<WEICHEB_PIN); 
          }
-         else
+         else // Weiche auf Gerade stellen
          {
             WEICHEPORT &= ~(1<<WEICHEB_PIN);
          }
       }
       else
       {
-         WEICHEPORT &= ~(1<<WEICHEA_PIN);
+         WEICHEPORT &= ~(1<<WEICHEA_PIN); 
       }
       
   
