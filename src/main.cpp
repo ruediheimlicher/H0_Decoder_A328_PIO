@@ -469,30 +469,10 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
     */
    
    
-   //OSZI_B_LO();
-   if (speed)
-   {
-      // OSZI_B_LO();
-      motorPWM++;
-   }
-   
-   if ((motorPWM > speed) || (speed == 0)) // Impulszeit abgelaufen oder speed ist 0
-   {
-      MOTORPORT |= (1<<pwmpin);  // Motor OFF    
-   }
-   
-   if (motorPWM >= 254) //ON, neuer Motorimpuls
-   {
-      MOTORPORT &= ~(1<<pwmpin);
-      motorPWM = 0;
-   }
+
    //OSZI_B_HI();
    
-   if (displayfenstercounter > 8)
-   {
-      //displayfensterfunktion();
-      //displayfenstercounter=0;
-   }
+
    
    // MARK: TIMER0 TIMER0_COMPA INT0
    if (INT0status & (1<<INT0_WAIT))
@@ -671,7 +651,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         }
                      }
                      
-                     
+                     /*
                      switch (deflokdata)
                         {
                            case 0x03:
@@ -726,7 +706,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                               break;
                               
                         } // switch (deflokdata)    
-
+                        */
                      //SYNC_HI();
                      OSZI_B_HI();
                   }
