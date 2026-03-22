@@ -450,6 +450,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       waitcounter++; 
       if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Stautus abfragen
       {
+
          
          //OSZI_A_LO();
          //OSZIAHI;
@@ -570,13 +571,13 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                // MARK: EQUAL
                if (lokadresseA && ((rawfunktionA == rawfunktionB) && (rawdataA == rawdataB) && (lokadresseA == lokadresseB))) // Lokadresse > 0 und Lokadresse und Data OK
                {
-                  OSZI_A_LO();
+                  //OSZI_A_LO();
                   SYNC_LO();
                   if (lokadresseB == LOK_ADRESSE)
                   {
                      //OSZI_A_LO();
                      
-                     OSZI_B_LO();
+                     //OSZI_B_LO();
                      // Daten uebernehmen
                      
                      lokstatus |= (1<<ADDRESSBIT);
@@ -620,8 +621,11 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      // Weiche stellen einleiten
                         if(deflokdata == speedcodelookuptable[WEICHENCODE])
                         {
-                           WEICHEPORT |= (1<<WEICHEA_PIN); // Start Bewegung
+                           
+                          // WEICHEPORT |= (1<<WEICHEA_PIN); // Start Bewegung
                            weichenstatus |= (1<<WEICHESTART);
+                           OSZI_B_LO();
+                           OSZI_A_LO();
                            if(lokstatus & (1<<FUNKTIONBIT)) // Weiche auf Ablenkung stellen
                            {
                               WEICHEPORT |= (1<<WEICHEB_PIN); 
@@ -635,13 +639,14 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         }
                         else
                         {
-                           WEICHEPORT &= ~(1<<WEICHEA_PIN); 
+                           //WEICHEPORT &= ~(1<<WEICHEB_PIN);
+                           //WEICHEPORT &= ~(1<<WEICHEA_PIN); 
                            //weichenstatus &= ~(1<<ABLENKUNG);
                         }
 
 
                      // end Weiche
-                     OSZI_B_HI();
+                     
                   }
                   else 
                   {
@@ -650,7 +655,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      INT0status = 0;
                      return;
                   }
-                  OSZI_A_HI();
+                  //OSZI_A_HI();
                   SYNC_HI();
                   
                }// if (lokadresseA &&...
@@ -660,10 +665,22 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   // aussteigen
                   //deflokdata = 0xCA;
                   INT0status = 0;
-                  return;
+                  //return;
                   
                }
-               
+               /*
+               if(weichenstatus & (1<<WEICHESTART))
+               {
+                  weichenimpulscounter++;
+                  if(weichenimpulscounter > WEICHENIMPULSDAUER) // Impuls beenden
+                  {
+                     //WEICHEPORT &= ~(1<<WEICHEA_PIN); 
+                     //WEICHEPORT &= ~(1<<WEICHEB_PIN); 
+                     weichenstatus &= ~(1<<WEICHESTART);
+                     OSZI_A_HI();
+                  }
+               }
+               */
                INT0status |= (1<<INT0_END);
                //     OSZIPORT |= (1<<PAKETB);
                if (INT0status & (1<<INT0_PAKET_B))
@@ -792,6 +809,18 @@ int main (void)
    
 
       // dip lesen
+
+      if(weichenstatus & (1<<WEICHESTART))
+               {
+                  weichenimpulscounter++;
+                  if(weichenimpulscounter > WEICHENIMPULSDAUER) // Impuls beenden
+                  {
+                     WEICHEPORT &= ~(1<<WEICHEA_PIN); 
+                     WEICHEPORT &= ~(1<<WEICHEB_PIN); 
+                     weichenstatus &= ~(1<<WEICHESTART);
+                     OSZI_A_HI();
+                  }
+               }
       /*
      WEICHENCODE = 0xFF;
      WEICHENCODE = WEICHEDIP_PIN & 0x38;
@@ -845,7 +874,7 @@ int main (void)
          
          //OSZI_B_HI();
       }  // loopcount0>=refreshtakt
-      OSZI_B_HI();
+      //OSZI_B_HI();
    
       
    }//while
