@@ -443,37 +443,7 @@ ISR(INT0_vect)
 ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 {
    
-   
-   //OSZIATOG;
-   //return;
-   
-   /*
-    if(lokstatus & (1<<FUNKTIONBIT))
-    {
-    dimmcounter++;
-    
-    if(dimmcounter > LEDPWM)
-    {
-    WEICHEPORT &= ~(1<<ledonpin); // Lampe-PWM  OFF
-    
-    }
-    
-    if(dimmcounter > 253)
-    {
-    WEICHEPORT |= (1<<ledonpin); // Lampe-PWM  ON, neuer Impuls
-    dimmcounter = 0;
-    }
-    
-    
-    } // if Funktionbit
-    */
-   
-   
 
-   //OSZI_B_HI();
-   
-
-   
    // MARK: TIMER0 TIMER0_COMPA INT0
    if (INT0status & (1<<INT0_WAIT))
    {
@@ -567,17 +537,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                
             }
          }
-         /*
-          // Paket anzeigen
-          if (INT0status & (1<<INT0_PAKET_B))
-          {
-          //           TESTPORT |= (1<<TEST2);
-          }
-          if (INT0status & (1<<INT0_PAKET_A))
-          {
-          //           TESTPORT |= (1<<TEST1);
-          }
-          */
+
          
          if (tritposition < 17)
          {
@@ -651,63 +611,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         }
                      }
                      
-                     /*
-                     switch (deflokdata)
-                        {
-                           case 0x03:
-                              
-                              speedcode = 0;
-                              
-                              break;
-                           case 0x0C:
-                              speedcode = 1;
-                              break;
-                           case 0x0F:                             
-                              speedcode = 2;
-                              break;
-                           case 0x30:
-                              speedcode = 3;
-                              break;
-                           case 0x33:
-                              speedcode = 4;
-                              break;
-                           case 0x3C:
-                              speedcode = 5;
-                              break;
-                           case 0x3F:
-                              speedcode = 6;
-                              break;
-                           case 0xC0:
-                              speedcode = 7;
-                              break;
-                           case 0xC3:
-                              speedcode = 8;
-                              break;
-                           case 0xCC:
-                              speedcode = 9;
-                              break;
-                           case 0xCF:
-                              speedcode = 10;
-                              break;
-                           case 0xF0:
-                              speedcode = 11;
-                              break;
-                           case 0xF3:
-                              speedcode = 12;
-                              break;
-                           case 0xFC:
-                              speedcode = 13;
-                              break;
-                           case 0xFF:
-                              speedcode = 14;
-                              break;
-                           default:
-                              speedcode = 0;
-                              break;
-                              
-                        } // switch (deflokdata)    
-                        */
-                     //SYNC_HI();
                      OSZI_B_HI();
                   }
                   else 
