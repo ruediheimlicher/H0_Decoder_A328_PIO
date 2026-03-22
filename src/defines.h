@@ -131,6 +131,11 @@
 #define WEICHEDIP2        5
 #define WEICHEDIP3        2
 
+#define WEICHESTART       0
+#define ABLENKUNG         1
+#define GERADE            2
+#define WEICHENIMPULSDAUER  100
+
 
 #define WEICHE         3
 #define MEM           6 // Eingang fuer last richtung (Kondensator)
