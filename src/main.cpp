@@ -213,7 +213,7 @@ uint8_t speedlookuptable[10][15] =
    {0,42,45,50,57,65,75,87,101,116,134,153,173,196,220},
    {0,42,45,51,58,68,79,93,108,125,144,165,188,213,240}
 };
-uint8_t speedcodelookuptable[15] = {0x3,0x0C,0x0F,0x30,0x33,0x3C,0x3F,0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF};
+uint8_t speedcodelookuptable[16] = {0,0x3,0x0C,0x0F,0x30,0x33,0x3C,0x3F,0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF};
 
 volatile uint8_t   lastDIR =  0;
 uint8_t loopledtakt = 0x40;
@@ -281,7 +281,7 @@ void slaveinit(void)
    WEICHEDIP_DDR &= ~(1<<WEICHEDIP1);
    WEICHEDIP_DDR &= ~(1<<WEICHEDIP2);
 
-   WEICHEDIP_PORT |= (1<<WEICHEDIP0);
+   WEICHEDIP_PORT |= (1<<WEICHEDIP0); // pullup
    WEICHEDIP_PORT |= (1<<WEICHEDIP1);
    WEICHEDIP_PORT |= (1<<WEICHEDIP2);
 
@@ -921,13 +921,14 @@ int main (void)
       */    
      //WEICHENCODE &= ~(1<<3); // Bit 3 ist 0
      // WEICHENCODE -= 1;
-     //WEICHENCODE = 4;
+    
 
-     WEICHENCODE = 0;
+     WEICHENCODE = 0xFF;
      WEICHENCODE = WEICHEDIP_PIN & 0x38;
       WEICHENCODE >>= 3;
       //WEICHENCODE += 1;
-
+      //WEICHENCODE = 0;
+      // {0,0x3,0x0C,0x0F,0x30,0x33,0x3C,0x3F,0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF};
       if(deflokdata == speedcodelookuptable[WEICHENCODE])
       {
          WEICHEPORT |= (1<<WEICHEA_PIN);
