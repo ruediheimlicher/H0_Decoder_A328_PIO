@@ -194,7 +194,8 @@ volatile uint16_t   motorPWM=0;
 
 volatile uint8_t weichenstatus = 0;
 
-volatile uint16_t weichenimpulscounter = 0;
+volatile uint16_t weichenimpulscounter0 = 0;
+volatile uint16_t weichenimpulscounter1 = 0;
 
 
 volatile uint8_t   taskcounter = 0;
@@ -444,22 +445,7 @@ ISR(INT0_vect)
 
 ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 {
-   if(weichenstatus & (1<<WEICHESTART))
-   {
-      
-      
-      if(weichenimpulscounter > 10*WEICHENIMPULSDAUER)
-      {
-         OSZI_B_HI();
-         //weichenstatus &= ~(1<<WEICHESTART);
-         //WEICHEPORT &= ~(1<<WEICHEA_PIN);
-         //WEICHEPORT &= ~(1<<WEICHEB_PIN);
-      }
-      else
-      {
-         weichenimpulscounter++;
-      }
-   }
+   
 
    // MARK: TIMER0 TIMER0_COMPA INT0
    if (INT0status & (1<<INT0_WAIT))
@@ -627,14 +613,22 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            deflokdata &= ~(1<<i);
                         }
                      }
-                     
-                     // Weichennummer checken
-                     WEICHENCODE = 0xFF;
-                     WEICHENCODE = WEICHEDIP_PIN & 0x38;
-     
-                     WEICHENCODE >>= 3;
-                     WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
-
+                     //if(deflokdata != oldlokdata)
+                     //if(weichenstatus &(1<<WEICHEREADY))
+                     {
+                        
+                        // Weichennummer checken
+                        WEICHENCODE = 0xFF;
+                        WEICHENCODE = WEICHEDIP_PIN & 0x38;
+      
+                        WEICHENCODE >>= 3;
+                        WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
+                        oldlokdata = deflokdata;
+                     }
+                     //else
+                     {
+                        //WEICHENCODE = 0x1F;
+                     }
                      //OSZI_B_HI();
                   }
                   else 
@@ -739,7 +733,7 @@ int main (void)
    
    
    sei();
-   
+   weichenstatus |= (1<<WEICHEREADY);
 
    
    uint8_t counter = 0;
@@ -783,7 +777,30 @@ int main (void)
          
       }// end firstrun
       
-   
+      if(weichenstatus & (1<<WEICHERUN))
+      {
+         weichenimpulscounter0++;
+         
+         
+         
+         if(weichenimpulscounter0 > WEICHENIMPULSDAUER)
+         {
+            weichenimpulscounter0 = 0;
+            OSZI_B_HI();
+            //weichenstatus &= ~(1<<WEICHESTART);
+            //WEICHEPORT &= ~(1<<WEICHEA_PIN);
+            //WEICHEPORT &= ~(1<<WEICHEB_PIN);
+            weichenstatus &= ~(WEICHERUN);
+            weichenstatus |= (1<<WEICHEREADY);
+            
+         }
+      // else
+         {
+            
+         }
+
+         
+      } // Weicherun
 
       // dip lesen
       /*
@@ -794,13 +811,16 @@ int main (void)
       WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
       */      
       // {0,0x3,0x0C,0x0F,0x30,0x33,0x3C,0x3F,0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF};
-      if(deflokdata == speedcodelookuptable[WEICHENCODE])
+
+      if((deflokdata == speedcodelookuptable[WEICHENCODE]) && (weichenstatus & (1<<WEICHEREADY)))
       {
-         WEICHEPORT |= (1<<WEICHEA_PIN); // Start Bewegung
+         weichenstatus &= ~(1<<WEICHEREADY);
+         //WEICHEPORT |= (1<<WEICHEA_PIN); // Start Bewegung
          if(!(weichenstatus & (1<<WEICHESTART)))
          {
+            weichenstatus |= (1<<WEICHERUN);
             weichenstatus |= (1<<WEICHESTART);
-            weichenimpulscounter = 0;
+            weichenimpulscounter0 = 0;
             OSZI_B_LO();
          }
          
@@ -823,6 +843,7 @@ int main (void)
       {
          WEICHEPORT &= ~(1<<WEICHEA_PIN); 
          WEICHEPORT &= ~(1<<WEICHEB_PIN);
+         //weichenstatus |= (1<<WEICHEREADY);
       }
       
   
