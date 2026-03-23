@@ -444,7 +444,22 @@ ISR(INT0_vect)
 
 ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 {
-   
+   if(weichenstatus & (1<<WEICHESTART))
+   {
+      
+      
+      if(weichenimpulscounter > 10*WEICHENIMPULSDAUER)
+      {
+         OSZI_B_HI();
+         //weichenstatus &= ~(1<<WEICHESTART);
+         //WEICHEPORT &= ~(1<<WEICHEA_PIN);
+         //WEICHEPORT &= ~(1<<WEICHEB_PIN);
+      }
+      else
+      {
+         weichenimpulscounter++;
+      }
+   }
 
    // MARK: TIMER0 TIMER0_COMPA INT0
    if (INT0status & (1<<INT0_WAIT))
@@ -578,7 +593,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   {
                      //OSZI_A_LO();
                      
-                     OSZI_B_LO();
+                     //OSZI_B_LO();
                      // Daten uebernehmen
                      
                      lokstatus |= (1<<ADDRESSBIT);
@@ -620,7 +635,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      WEICHENCODE >>= 3;
                      WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
 
-                     OSZI_B_HI();
+                     //OSZI_B_HI();
                   }
                   else 
                   {
@@ -782,16 +797,23 @@ int main (void)
       if(deflokdata == speedcodelookuptable[WEICHENCODE])
       {
          WEICHEPORT |= (1<<WEICHEA_PIN); // Start Bewegung
-         weichenstatus |= (1<<WEICHESTART);
-
+         if(!(weichenstatus & (1<<WEICHESTART)))
+         {
+            weichenstatus |= (1<<WEICHESTART);
+            weichenimpulscounter = 0;
+            OSZI_B_LO();
+         }
+         
          if(lokstatus & (1<<FUNKTIONBIT)) // Weiche auf Ablenkung stellen
          {
+            WEICHEPORT &= ~(1<<WEICHEA_PIN);
             WEICHEPORT |= (1<<WEICHEB_PIN); 
             weichenstatus |= (1<<ABLENKUNG);
 
          }
          else // Weiche auf Gerade stellen
          {
+            WEICHEPORT |= (1<<WEICHEA_PIN); 
             WEICHEPORT &= ~(1<<WEICHEB_PIN);
             weichenstatus |= (1<<GERADE);
 
@@ -800,6 +822,7 @@ int main (void)
       else
       {
          WEICHEPORT &= ~(1<<WEICHEA_PIN); 
+         WEICHEPORT &= ~(1<<WEICHEB_PIN);
       }
       
   
