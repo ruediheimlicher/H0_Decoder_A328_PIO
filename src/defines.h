@@ -139,8 +139,8 @@
 
 #define ABLENKUNG         6
 #define GERADE            7
-#define WEICHENIMPULSDAUER  1000
-
+#define WEICHENIMPULSDAUER  2000
+#define WEICHENIMPULSDELAY  1000
 
 #define WEICHE         3
 #define MEM           6 // Eingang fuer last richtung (Kondensator)
