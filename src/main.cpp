@@ -297,8 +297,8 @@ void slaveinit(void)
 	LCD_DDR |= (1<<LCD_CLOCK_PIN);	//Pin 7 von PORT B als Ausgang fuer LCD
 */
    
-   TESTDDR |= (1<<TEST0); // test0
-   TESTPORT |= (1<<TEST0); // HI
+   TESTDDR |= (1<<TEST1); // test1
+   TESTPORT |= (1<<TEST1); // HI
    
    MOTORDDR |= (1<<MOTORA_PIN);  // Output Motor A 
    MOTORPORT |= (1<<MOTORA_PIN); // HI
@@ -559,28 +559,27 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
             }
             else if (INT0status & (1<<INT0_PAKET_B)) // zweites Paket, Werte testen
             {
-               //SYNC_LO();
+               SYNC_LO();
                //displaystatus |= (1<<DISPLAY_GO);
                // // Displayfenster begin
-               if(displayfenstercounter++ > 4)
-               {
-                  displaystatus |= (1<<DISPLAY_GO);
-                  displayfenstercounter=0;
-               }
+
                //displayfenstercounter = MAXFENSTERCOUNT;
-               
+               SYNC_HI();
                // MARK: EQUAL
                if (lokadresseA && ((rawfunktionA == rawfunktionB) && (rawdataA == rawdataB) && (lokadresseA == lokadresseB))) // Lokadresse > 0 und Lokadresse und Data OK
                {
+                  
                   OSZI_A_LO();
-                  SYNC_LO();
+                  //SYNC_LO();
                   if (lokadresseB == LOK_ADRESSE)
                   {
+                     weichenstatus |= (1<<WEICHERUN);
                      //OSZI_A_LO();
-                     
+                     // TEST1_LO();
                      //OSZI_B_LO();
                      // Daten uebernehmen
                      
+                     //weichenimpulscounter
                      lokstatus |= (1<<ADDRESSBIT);
                      deflokadresse = lokadresseB;
                      //deffunktion = (rawdataB & 0x03); // bit 0,1 funktion als eigene var
@@ -627,24 +626,29 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      // aussteigen
                      //deflokdata = 0xCA;
                      INT0status = 0;
+                     
+                     //weichenstatus &= ~(1<<WEICHESTART);
+                     //OSZI_A_HI();
                      return;
                   }
+
                   OSZI_A_HI();
-                  SYNC_HI();
+                  //SYNC_HI();
                   
                }// if (lokadresseA &&...
                else 
                {
                   lokstatus &= ~(1<<ADDRESSBIT);
+
                   // aussteigen
                   //deflokdata = 0xCA;
+                  
                   INT0status = 0;
                   return;
                   
                }
                
                INT0status |= (1<<INT0_END);
-               //     OSZIPORT |= (1<<PAKETB);
                if (INT0status & (1<<INT0_PAKET_B))
                {
                   //               TESTPORT |= (1<<TEST2);
@@ -780,13 +784,15 @@ int main (void)
       WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
             
       // {0,0x3,0x0C,0x0F,0x30,0x33,0x3C,0x3F,0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF};
-      if(deflokdata == speedcodelookuptable[WEICHENCODE])
+      if(deflokdata == speedcodelookuptable[WEICHENCODE]) // Weiche passt
       {
+         
          if(!(weichenstatus & (1<<WEICHESTART)))
          {
             weichenstatus |= (1<<WEICHESTART);
             weichenimpulscounter = 0;
             OSZI_B_LO();
+            TEST1_LO();
          
          }
             if(lokstatus & (1<<FUNKTIONBIT)) // Weiche auf Ablenkung stellen
@@ -802,25 +808,30 @@ int main (void)
                WEICHEPORT &= ~(1<<WEICHEB_PIN);
                weichenstatus |= (1<<GERADE);
                weichenstatus &= ~(1<<ABLENKUNG);
-               weichenstatus |= (1<<WEICHEOFF);
+               
 
             }
         
       }
       else
       {
+
          weichenstatus &= ~(1<<ABLENKUNG);
          weichenstatus &= ~(1<<GERADE);
          WEICHEPORT &= ~(1<<WEICHEA_PIN); 
          WEICHEPORT &= ~(1<<WEICHEB_PIN);
+         weichenstatus |= (1<<WEICHEOFF);
+        
       }
       
+
       if(weichenstatus & (1<<WEICHESTART))
       {
          weichenimpulscounter++;
        
          if(weichenimpulscounter > WEICHENIMPULSDAUER)
          {
+            TEST1_HI();
             OSZI_B_HI();
             //weichenstatus &= ~(1<<WEICHESTART);
             //WEICHEPORT &= ~(1<<WEICHEA_PIN);

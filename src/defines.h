@@ -46,6 +46,9 @@
 
 #define TEST0     0
 #define TEST1     1
+#define TEST1_LO() TESTPORT &= ~(1<<TEST1)
+#define TEST1_HI() TESTPORT |= (1<<TEST1)
+#define TEST1_TOGG() TESTPORT ^= (1<<TEST1)
 
 
 // Bits displaydata
