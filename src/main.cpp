@@ -444,22 +444,7 @@ ISR(INT0_vect)
 
 ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 {
-   if(weichenstatus & (1<<WEICHESTART))
-   {
-      
-      
-      if(weichenimpulscounter > 10*WEICHENIMPULSDAUER)
-      {
-         OSZI_B_HI();
-         //weichenstatus &= ~(1<<WEICHESTART);
-         //WEICHEPORT &= ~(1<<WEICHEA_PIN);
-         //WEICHEPORT &= ~(1<<WEICHEB_PIN);
-      }
-      else
-      {
-         weichenimpulscounter++;
-      }
-   }
+   
 
    // MARK: TIMER0 TIMER0_COMPA INT0
    if (INT0status & (1<<INT0_WAIT))
@@ -627,14 +612,14 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                            deflokdata &= ~(1<<i);
                         }
                      }
-                     
+                     /*
                      // Weichennummer checken
                      WEICHENCODE = 0xFF;
                      WEICHENCODE = WEICHEDIP_PIN & 0x38;
      
                      WEICHENCODE >>= 3;
                      WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
-
+                     */
                      //OSZI_B_HI();
                   }
                   else 
@@ -786,45 +771,66 @@ int main (void)
    
 
       // dip lesen
-      /*
+      
+      // in ISR
      WEICHENCODE = 0xFF;
      WEICHENCODE = WEICHEDIP_PIN & 0x38;
      
       WEICHENCODE >>= 3;
       WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
-      */      
+            
       // {0,0x3,0x0C,0x0F,0x30,0x33,0x3C,0x3F,0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF};
       if(deflokdata == speedcodelookuptable[WEICHENCODE])
       {
-         WEICHEPORT |= (1<<WEICHEA_PIN); // Start Bewegung
          if(!(weichenstatus & (1<<WEICHESTART)))
          {
             weichenstatus |= (1<<WEICHESTART);
             weichenimpulscounter = 0;
             OSZI_B_LO();
-         }
          
-         if(lokstatus & (1<<FUNKTIONBIT)) // Weiche auf Ablenkung stellen
-         {
-            WEICHEPORT &= ~(1<<WEICHEA_PIN);
-            WEICHEPORT |= (1<<WEICHEB_PIN); 
-            weichenstatus |= (1<<ABLENKUNG);
-
          }
-         else // Weiche auf Gerade stellen
-         {
-            WEICHEPORT |= (1<<WEICHEA_PIN); 
-            WEICHEPORT &= ~(1<<WEICHEB_PIN);
-            weichenstatus |= (1<<GERADE);
+            if(lokstatus & (1<<FUNKTIONBIT)) // Weiche auf Ablenkung stellen
+            {
+               WEICHEPORT &= ~(1<<WEICHEA_PIN);
+               WEICHEPORT |= (1<<WEICHEB_PIN); 
+               weichenstatus |= (1<<ABLENKUNG);
+               weichenstatus &= ~(1<<GERADE);
+            }
+            else // Weiche auf Gerade stellen
+            {
+               WEICHEPORT |= (1<<WEICHEA_PIN); 
+               WEICHEPORT &= ~(1<<WEICHEB_PIN);
+               weichenstatus |= (1<<GERADE);
+               weichenstatus &= ~(1<<ABLENKUNG);
+               weichenstatus |= (1<<WEICHEOFF);
 
-         }
+            }
+        
       }
       else
       {
+         weichenstatus &= ~(1<<ABLENKUNG);
+         weichenstatus &= ~(1<<GERADE);
          WEICHEPORT &= ~(1<<WEICHEA_PIN); 
          WEICHEPORT &= ~(1<<WEICHEB_PIN);
       }
       
+      if(weichenstatus & (1<<WEICHESTART))
+      {
+         weichenimpulscounter++;
+       
+         if(weichenimpulscounter > WEICHENIMPULSDAUER)
+         {
+            OSZI_B_HI();
+            //weichenstatus &= ~(1<<WEICHESTART);
+            //WEICHEPORT &= ~(1<<WEICHEA_PIN);
+            //WEICHEPORT &= ~(1<<WEICHEB_PIN);
+         }
+         else
+         {
+            
+         }
+      }
   
       loopcount0++;
       if (loopcount0>=refreshtakt)

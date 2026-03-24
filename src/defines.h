@@ -137,6 +137,7 @@
 #define WEICHEDELAY       2
 #define WEICHEREADY       3
 
+#define WEICHEOFF         5
 #define ABLENKUNG         6
 #define GERADE            7
 #define WEICHENIMPULSDAUER  1000
