@@ -628,7 +628,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         {
                            weichenstatus |= (1<<WEICHESTART);
                            weichenimpulscounter = 0;
-                           OSZI_B_LO();
+                           //OSZI_B_LO();
                            //TEST1_LO();
                         
                         }
@@ -837,7 +837,7 @@ int main (void)
          {
             weichenstatus |= (1<<WEICHESTART);
             weichenimpulscounter = 0;
-            OSZI_B_LO();
+            //OSZI_B_LO();
             //TEST1_LO();
          
          }
@@ -924,7 +924,7 @@ int main (void)
          
          //OSZI_B_HI();
       }  // loopcount0>=refreshtakt
-      OSZI_B_HI();
+      //OSZI_B_HI();
    
       
    }//while
