@@ -559,12 +559,12 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
             }
             else if (INT0status & (1<<INT0_PAKET_B)) // zweites Paket, Werte testen
             {
-               SYNC_LO();
+               //SYNC_LO();
                //displaystatus |= (1<<DISPLAY_GO);
                // // Displayfenster begin
 
                //displayfenstercounter = MAXFENSTERCOUNT;
-               SYNC_HI();
+               //SYNC_HI();
                // MARK: EQUAL
                if (lokadresseA && ((rawfunktionA == rawfunktionB) && (rawdataA == rawdataB) && (lokadresseA == lokadresseB))) // Lokadresse > 0 und Lokadresse und Data OK
                {
@@ -573,6 +573,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   //SYNC_LO();
                   if (lokadresseB == LOK_ADRESSE)
                   {
+                     
                      weichenstatus |= (1<<WEICHERUN);
                      //OSZI_A_LO();
                      // TEST1_LO();
@@ -633,21 +634,21 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         }
                         if(lokstatus & (1<<FUNKTIONBIT)) // Weiche auf Ablenkung stellen
                         {
-                           WEICHEPORT &= ~(1<<WEICHEA_PIN);
-                           WEICHEPORT |= (1<<WEICHEB_PIN); 
+                           //WEICHEPORT &= ~(1<<WEICHEA_PIN);
+                           //WEICHEPORT |= (1<<WEICHEB_PIN); 
                            weichenstatus |= (1<<ABLENKUNG);
                            weichenstatus &= ~(1<<GERADE);
                         }
                         else // Weiche auf Gerade stellen
                         {
-                           WEICHEPORT |= (1<<WEICHEA_PIN); 
-                           WEICHEPORT &= ~(1<<WEICHEB_PIN);
+                           //WEICHEPORT |= (1<<WEICHEA_PIN); 
+                           //WEICHEPORT &= ~(1<<WEICHEB_PIN);
                            weichenstatus |= (1<<GERADE);
                            weichenstatus &= ~(1<<ABLENKUNG);
                            
 
                         }
-                     
+                        TEST1_HI();
                      }
                      else
                      {
@@ -696,7 +697,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                {
                   //               TESTPORT |= (1<<TEST2);
                }
-               //SYNC_HI();
+               SYNC_HI();
             } // End Paket B
          }
         // OSZI_B_HI();
@@ -872,20 +873,33 @@ int main (void)
 
       if(weichenstatus & (1<<WEICHESTART))
       {
+         
          weichenimpulscounter++;
        
+         if(weichenstatus & (1<<ABLENKUNG))
+         {
+            WEICHEPORT &= ~(1<<WEICHEA_PIN);
+            WEICHEPORT |= (1<<WEICHEB_PIN); 
+            weichenstatus &= ~(1<<ABLENKUNG);
+         }
+         else if(weichenstatus & (1<<GERADE))
+         {
+            WEICHEPORT |= (1<<WEICHEA_PIN);
+            WEICHEPORT &= ~(1<<WEICHEB_PIN);
+            weichenstatus &= ~(1<<GERADE);
+         }
+
          if(weichenimpulscounter > WEICHENIMPULSDAUER)
          {
             TEST1_HI();
             OSZI_B_HI();
-            //weichenstatus &= ~(1<<WEICHESTART);
             WEICHEPORT &= ~(1<<WEICHEA_PIN);
             WEICHEPORT &= ~(1<<WEICHEB_PIN);
+
+            //
+            weichenstatus &= ~(1<<WEICHESTART);
          }
-         else
-         {
-            
-         }
+         
       }
   
       loopcount0++;
