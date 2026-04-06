@@ -622,7 +622,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                      
                      if(deflokdata == speedcodelookuptable[WEICHENCODE]) // Weiche passt
                      {
-                        TEST1_LO();
                         weichenimpulscounter = 0;
                         if(!(weichenstatus & (1<<WEICHESTART)))
                         {
@@ -634,21 +633,14 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                         }
                         if(lokstatus & (1<<FUNKTIONBIT)) // Weiche auf Ablenkung stellen
                         {
-                           //WEICHEPORT &= ~(1<<WEICHEA_PIN);
-                           //WEICHEPORT |= (1<<WEICHEB_PIN); 
                            weichenstatus |= (1<<ABLENKUNG);
                            weichenstatus &= ~(1<<GERADE);
                         }
                         else // Weiche auf Gerade stellen
                         {
-                           //WEICHEPORT |= (1<<WEICHEA_PIN); 
-                           //WEICHEPORT &= ~(1<<WEICHEB_PIN);
                            weichenstatus |= (1<<GERADE);
                            weichenstatus &= ~(1<<ABLENKUNG);
-                           
-
                         }
-                        TEST1_HI();
                      }
                      else
                      {
@@ -668,7 +660,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   else 
                   {
                      // aussteigen
-                     //deflokdata = 0xCA;
                      INT0status = 0;
                      
                      //weichenstatus &= ~(1<<WEICHESTART);
@@ -684,9 +675,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                {
                   lokstatus &= ~(1<<ADDRESSBIT);
 
-                  // aussteigen
-                  //deflokdata = 0xCA;
-                  
                   INT0status = 0;
                   return;
                   
@@ -715,8 +703,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
          abstandcounter++;
       }
       else //if (abstandcounter ) // Paket 2
-      {
-         
+      {        
          abstandcounter = 0;
          // OSZIAHI;
       }
@@ -727,8 +714,6 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       }
       else 
       {
-         
-         //OSZIBHI; //pause detektiert
          pausecounter = 0;
          INT0status = 0; //Neue Daten abwarten
          return;
@@ -740,48 +725,34 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
 
 void displayfensterfunction(void)
 {
-   
    displayfenstercounter = 0;
    _delay_ms(2);
 }
 
-//LiquidCrystal_I2C lcd(0x27, 16, 2); // Adresse anpassen
 
 
 int main (void) 
 {
-   
-   
 	slaveinit();
 
 	
 	//uint16_t loopcount0=0;
    uint16_t loopcount0=0;
-   uint16_t loopcount1=0;
 
    uint16_t firstruncount0=0;
    uint16_t firstruncount1=0;
 
-	
 	_delay_ms(200);
-
-   
+  
    oldfunktion = 0x03; // 0x02
    oldlokdata = 0xCE;
    ledpwm = LEDPWM;
-   
-   
+     
    sei();
-   
 
-   
    uint8_t counter = 0;
    uint16_t lcdcounter = 0;
     
-   if (DISPLAY)
-   {
-     // setlogscreen();
-   }
    
 	while (1)
    {  
@@ -789,8 +760,7 @@ int main (void)
       // Timing: loop: 40 us, takt 85us, mit if-teil 160 us
       wdt_reset();
       
-        
-      // firstrun
+           // firstrun
       
       if(loopstatus & (1<<FIRSTRUNBIT))
       {
@@ -804,7 +774,6 @@ int main (void)
             
             if (firstruncount1 >= 0xF0)
             {
-              
                 int0_init();
                
                _delay_ms(2);
@@ -815,62 +784,12 @@ int main (void)
          }
          
       }// end firstrun
-      
-   
+
 
       // dip lesen
       
       // in ISR
-      /*
-     WEICHENCODE = 0xFF;
-     WEICHENCODE = WEICHEDIP_PIN & 0x38;
      
-      WEICHENCODE >>= 3;
-      WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
-       */     
-      // {0,0x3,0x0C,0x0F,0x30,0x33,0x3C,0x3F,0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF};
-      /*
-      if(deflokdata == speedcodelookuptable[WEICHENCODE]) // Weiche passt
-      {
-         
-         if(!(weichenstatus & (1<<WEICHESTART)))
-         {
-            weichenstatus |= (1<<WEICHESTART);
-            weichenimpulscounter = 0;
-            //OSZI_B_LO();
-            //TEST1_LO();
-         
-         }
-            if(lokstatus & (1<<FUNKTIONBIT)) // Weiche auf Ablenkung stellen
-            {
-               WEICHEPORT &= ~(1<<WEICHEA_PIN);
-               WEICHEPORT |= (1<<WEICHEB_PIN); 
-               weichenstatus |= (1<<ABLENKUNG);
-               weichenstatus &= ~(1<<GERADE);
-            }
-            else // Weiche auf Gerade stellen
-            {
-               WEICHEPORT |= (1<<WEICHEA_PIN); 
-               WEICHEPORT &= ~(1<<WEICHEB_PIN);
-               weichenstatus |= (1<<GERADE);
-               weichenstatus &= ~(1<<ABLENKUNG);
-               
-
-            }
-        
-      }
-      else
-      {
-
-         weichenstatus &= ~(1<<ABLENKUNG);
-         weichenstatus &= ~(1<<GERADE);
-         WEICHEPORT &= ~(1<<WEICHEA_PIN); 
-         WEICHEPORT &= ~(1<<WEICHEB_PIN);
-         weichenstatus |= (1<<WEICHEOFF);
-        
-      }
-      */
-
       if(weichenstatus & (1<<WEICHESTART))
       {
          
