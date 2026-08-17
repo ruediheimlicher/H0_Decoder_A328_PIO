@@ -734,8 +734,6 @@ void displayfensterfunction(void)
 int main (void) 
 {
 	slaveinit();
-
-	
 	//uint16_t loopcount0=0;
    uint16_t loopcount0=0;
 
@@ -751,7 +749,6 @@ int main (void)
    sei();
 
    uint8_t counter = 0;
-   uint16_t lcdcounter = 0;
     
    
 	while (1)
@@ -784,11 +781,8 @@ int main (void)
          }
          
       }// end firstrun
-
-
-      // dip lesen
       
-      // in ISR
+  
      
       if(weichenstatus & (1<<WEICHESTART))
       {
