@@ -117,6 +117,8 @@
 #define INT0_PAKET_A 4
 #define INT0_PAKET_B 5
 
+#define INT0_READY   7
+
 
 #define WEICHEPORT PORTC
 #define WEICHEDDR  DDRC

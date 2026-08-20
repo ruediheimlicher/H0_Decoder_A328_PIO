@@ -393,7 +393,6 @@ void int0_init(void)
 ISR(INT0_vect) 
 {
    //OSZI_A_LO();
-   //if(displayfenstercounter%4 == 0)
    {
       //OSZI_B_LO();
       
@@ -442,9 +441,8 @@ ISR(INT0_vect)
 
 // MARK: ISR Timer2
 
-ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
-{
-   
+ISR(TIMER2_COMPA_vect) // // 
+{   
 
    // MARK: TIMER0 TIMER0_COMPA INT0
    if (INT0status & (1<<INT0_WAIT))
@@ -452,7 +450,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       waitcounter++; 
       if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Stautus abfragen
       {
-         
+         uint8_t BIT = INPIN & (1<<DATAPIN);
          //OSZI_A_LO();
          //OSZIAHI;
          INT0status &= ~(1<<INT0_WAIT);
@@ -573,7 +571,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
                   //SYNC_LO();
                   if (lokadresseB == LOK_ADRESSE)
                   {
-                     
+                     INT0status |= (1<<INT0_READY); // Bearbeitung in loop
                      weichenstatus |= (1<<WEICHERUN);
                      //OSZI_A_LO();
                      // TEST1_LO();
@@ -721,7 +719,7 @@ ISR(TIMER2_COMPA_vect) // // Schaltet Impuls an MOTOROUT LO wenn speed
       
    } // input LO
    //OSZI_B_HI();
-}
+} // ISR(TIMER2_COMPA_vect)
 
 void displayfensterfunction(void)
 {
