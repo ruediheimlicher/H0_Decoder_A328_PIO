@@ -120,21 +120,22 @@
 #define INT0_READY   7
 
 
-#define WEICHEPORT PORTC
-#define WEICHEDDR  DDRC
-#define WEICHEPIN   PINC
+#define WEICHEPORT PORTB
+#define WEICHEDDR  DDRB
+#define WEICHEPIN   PINB
 
 #define LED_CHANGEBIT       7  
 #define WEICHEA_PIN      1 
 #define WEICHEB_PIN      0
 
-#define WEICHEDIP_PORT    PORTD
-#define WEICHEDIP_DDR     DDRD
-#define WEICHEDIP_PIN     PIND
-#define WEICHEDIP0        3
-#define WEICHEDIP1        4
-#define WEICHEDIP2        5
-#define WEICHEDIP3        2
+#define WEICHEDIP_PORT    PORTC
+#define WEICHEDIP_DDR     DDRC
+#define WEICHEDIP_PIN     PINC
+
+#define WEICHEDIP0        0
+#define WEICHEDIP1        1
+#define WEICHEDIP2        2
+#define WEICHEDIP3        3
 
 
 #define WEICHESTART       0

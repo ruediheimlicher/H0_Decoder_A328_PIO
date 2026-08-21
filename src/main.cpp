@@ -23,7 +23,7 @@
 #include "lcd.c"
 
 //#include <Wire.h>
-//#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal_I2C.h>
 //#include "display.c"
 
 #include "text.h"
@@ -36,13 +36,13 @@
 #include "adc.c"
 #define TW_STATUS   (TWSR & TW_STATUS_MASK)
 
-
+LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 //***********************************
 						
-//uint8_t  LOK_ADRESSE = 0x7F; //	0111 1111	Trinär
+uint8_t  LOK_ADRESSE = 0x7F; //	0111 1111	Trinär
 
-uint8_t  LOK_ADRESSE = 0xCC; //		Trinär
+//uint8_t  LOK_ADRESSE = 0xCC; //		Trinär
 //
 
 uint8_t WEICHENCODE = 0;
@@ -70,7 +70,7 @@ uint8_t WEICHENCODE = 0;
 
 #define LOOPLEDPORT		PORTB
 #define LOOPLEDDDR      DDRB
-#define LOOPLED			0
+#define LOOPLED			5
 
 #define INT0_RISING	   0
 #define INT0_FALLING		1
@@ -223,7 +223,7 @@ uint8_t speedcodelookuptable[16] = {0,0x3,0x0C,0x0F,0x30,0x33,0x3C,0x3F,0xC0,0xC
 
 volatile uint8_t   lastDIR =  0;
 uint8_t loopledtakt = 0x40;
-uint8_t refreshtakt = 0x45;
+uint16_t refreshtakt = 0xFFFE;
 uint16_t speedchangetakt = 0x350; // takt fuer beschleunigen/bremsen
 
 
@@ -283,13 +283,6 @@ void slaveinit(void)
 	//LOOPLEDPORT |=(1<<LOOPLED);
    LOOPLEDDDR |= (1<<LOOPLED);
    
-   WEICHEDIP_DDR &= ~(1<<WEICHEDIP0);
-   WEICHEDIP_DDR &= ~(1<<WEICHEDIP1);
-   WEICHEDIP_DDR &= ~(1<<WEICHEDIP2);
-
-   WEICHEDIP_PORT |= (1<<WEICHEDIP0); // pullup
-   WEICHEDIP_PORT |= (1<<WEICHEDIP1);
-   WEICHEDIP_PORT |= (1<<WEICHEDIP2);
 
   
 
@@ -301,14 +294,14 @@ void slaveinit(void)
 	LCD_DDR |= (1<<LCD_CLOCK_PIN);	//Pin 7 von PORT B als Ausgang fuer LCD
 */
    
-   TESTDDR |= (1<<TEST1); // test1
-   TESTPORT |= (1<<TEST1); // HI
+   //TESTDDR |= (1<<TEST1); // test1
+   //TESTPORT |= (1<<TEST1); // HI
    
-   MOTORDDR |= (1<<MOTORA_PIN);  // Output Motor A 
-   MOTORPORT |= (1<<MOTORA_PIN); // HI
+   //MOTORDDR |= (1<<MOTORA_PIN);  // Output Motor A 
+   //MOTORPORT |= (1<<MOTORA_PIN); // HI
    
-   MOTORDDR |= (1<<MOTORB_PIN);  // Output Motor B 
-   MOTORPORT |= (1<<MOTORB_PIN); // HI
+   //MOTORDDR |= (1<<MOTORB_PIN);  // Output Motor B 
+   //MOTORPORT |= (1<<MOTORB_PIN); // HI
    
    WEICHEDDR |= (1<<WEICHEA_PIN);  // Lampe A
    WEICHEPORT &= ~(1<<WEICHEA_PIN); // LO
@@ -583,7 +576,9 @@ ISR(TIMER2_COMPA_vect) // //
                   if (lokadresseB == LOK_ADRESSE)
                   {
                      OSZI_B_LO();
-                     INT0status |= (1<<INT0_READY); // Bearbeitung in loop
+                     lokadresseA = 0; // reset
+                     lokadresseB = 0;
+                     //INT0status |= (1<<INT0_READY); // Bearbeitung in loop
                      weichenstatus |= (1<<WEICHERUN);
                      //OSZI_A_LO();
                      // TEST1_LO();
@@ -625,9 +620,10 @@ ISR(TIMER2_COMPA_vect) // //
                      
                      // Weichennummer checken
                      WEICHENCODE = 0xFF;
-                     WEICHENCODE = WEICHEDIP_PIN & 0x38;
+                     WEICHENCODE = WEICHEDIP_PIN & 0x0F;
+                     //WEICHENCODE = 0;
      
-                     WEICHENCODE >>= 3;
+                     //WEICHENCODE >>= 3;
                      WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
                      
                      if(deflokdata == speedcodelookuptable[WEICHENCODE]) // Weiche passt
@@ -785,7 +781,7 @@ int main (void)
                 int0_init();
                
                _delay_ms(2);
-                timer2(32);
+                timer2(16);
                //sei();
                loopstatus &= ~(1<<FIRSTRUNBIT);
             }
@@ -836,12 +832,13 @@ int main (void)
          loopcount0=0;            
          // Takt for display
          displaycounter1++;
-         if (displaycounter1 > MAXLOOP1)
+         //if (displaycounter1 > MAXLOOP1)
          {
             displaycounter1=0;
             LOOPLEDPORT ^= (1<<LOOPLED);
             counter++;
          }
+         
          
 
          
