@@ -238,7 +238,18 @@ uint16_t displaycounter1;
 
 uint16_t displayfenstercounter = 0; // counter fuer abgelaufene Zeit im Display-Fenster
 
+ uint16_t loopcount0=0;
 
+   uint16_t firstruncount0=0;
+   uint16_t firstruncount1=0;
+
+	_delay_ms(200);
+  
+   oldfunktion = 0x03; // 0x02
+   oldlokdata = 0xCE;
+   
+
+   uint8_t counter = 0;
 
 
 void displayfensterfunction(void);
@@ -621,10 +632,10 @@ ISR(TIMER2_COMPA_vect) // //
                      // Weichennummer checken
                      WEICHENCODE = 0xFF;
                      WEICHENCODE = WEICHEDIP_PIN & 0x0F;
-                     //WEICHENCODE = 0;
+                     WEICHENCODE = 0x0F; // wert für 2
      
                      //WEICHENCODE >>= 3;
-                     WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
+                     //WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
                      
                      if(deflokdata == speedcodelookuptable[WEICHENCODE]) // Weiche passt
                      {
@@ -737,8 +748,111 @@ void displayfensterfunction(void)
 }
 
 
+slaveinit();
+	//uint16_t loopcount0=0;
+  
+    ledpwm = LEDPWM;
+     
+   sei();
 
-int main (void) 
+
+
+void loop()
+{
+  
+      //OSZI_B_LO();
+      // Timing: loop: 40 us, takt 85us, mit if-teil 160 us
+      wdt_reset();
+      
+           // firstrun
+      
+      if(loopstatus & (1<<FIRSTRUNBIT))
+      {
+         firstruncount0++;
+         if (firstruncount0>=0x0A)
+         {
+
+            firstruncount0=0;
+            
+            firstruncount1++;
+            
+            if (firstruncount1 >= 0xF0)
+            {
+                int0_init();
+               
+               _delay_ms(2);
+                timer2(16);
+               //sei();
+               loopstatus &= ~(1<<FIRSTRUNBIT);
+            }
+         }
+         
+      }// end firstrun
+      
+  
+     
+      if(weichenstatus & (1<<WEICHESTART))
+      {
+         
+         weichenimpulscounter++;
+       
+         if(weichenstatus & (1<<ABLENKUNG))
+         {
+            WEICHEPORT &= ~(1<<WEICHEA_PIN);
+            WEICHEPORT |= (1<<WEICHEB_PIN); 
+            weichenstatus &= ~(1<<ABLENKUNG);
+         }
+         else if(weichenstatus & (1<<GERADE))
+         {
+            WEICHEPORT |= (1<<WEICHEA_PIN);
+            WEICHEPORT &= ~(1<<WEICHEB_PIN);
+            weichenstatus &= ~(1<<GERADE);
+         }
+
+         if(weichenimpulscounter > WEICHENIMPULSDAUER)
+         {
+            TEST1_HI();
+            //OSZI_B_HI();
+            WEICHEPORT &= ~(1<<WEICHEA_PIN);
+            WEICHEPORT &= ~(1<<WEICHEB_PIN);
+
+            //
+            weichenstatus &= ~(1<<WEICHESTART);
+         }
+         
+      }
+  
+      loopcount0++;
+      if (loopcount0>=refreshtakt)
+      {
+         //LOOPLEDPORT ^= (1<<LOOPLED);
+         //OSZI_B_LO();
+         loopcount0=0;
+         
+         loopcount0=0;            
+         // Takt for display
+         displaycounter1++;
+         //if (displaycounter1 > MAXLOOP1)
+         {
+            displaycounter1=0;
+            LOOPLEDPORT ^= (1<<LOOPLED);
+            counter++;
+         }
+         
+         
+
+         
+         
+         
+         //OSZI_B_HI();
+      }  // loopcount0>=refreshtakt
+      //OSZI_B_HI();
+   
+      
+   
+}
+
+int mainn (void) 
 {
 	slaveinit();
 	//uint16_t loopcount0=0;
