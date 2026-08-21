@@ -40,10 +40,14 @@
 
 //***********************************
 						
-uint8_t  LOK_ADRESSE = 0x7F; //	11001100	Trinär
+//uint8_t  LOK_ADRESSE = 0x7F; //	0111 1111	Trinär
+
+uint8_t  LOK_ADRESSE = 0xCC; //		Trinär
+//
+
 uint8_t WEICHENCODE = 0;
 // test
-//uint8_t  LOK_ADRESSE = 0x0F; //   11001100   Trinär
+//uint8_t  LOK_ADRESSE = 0x0F; //     Trinär
 
 //									
 //***********************************
@@ -360,7 +364,6 @@ void slaveinit(void)
 
 void timer2 (uint8_t wert) 
 { 
-//	TCCR2 |= (1<<CS02);				//8-Bit Timer, Timer clock = system clock/256
 
 //Takt fuer Servo
 //	TCCR2 |= (1<<CS20)|(1<<CS21);	//Takt /64	Intervall 64 us
@@ -384,7 +387,6 @@ void int0_init(void)
    EICRA |= (1 << ISC00) | (1 << ISC01);  // Trigger interrupt on rising edge
    EIMSK |= (1 << INT0);  // Enable external interrupt INT0
 
- //  INT0status |= (1<<INT0_RISING);
    INT0status = 0;
    INT0status |= (1<<INT0_WAIT);
 }
@@ -399,7 +401,7 @@ ISR(INT0_vect)
       if (INT0status == 0) // neue Daten beginnen
       {
          displaystatus &= ~(1<<DISPLAY_GO); // displayfenster end
-         
+         //OSZI_A_LO();
          //OSZI_A_HI(); 
          INT0status |= (1<<INT0_START);
          INT0status |= (1<<INT0_WAIT); // delay, um Wert des Eingangs zum richtigen Zeitpunkt zu messen
@@ -426,10 +428,11 @@ ISR(INT0_vect)
          waitcounter = 0;
          //     OSZIALO;
       }
-      //OSZI_A_HI();
+      
       //OSZI_B_HI();
       //SYNC_HI();
    }
+   //OSZI_A_HI();
    /*
    else
    {
@@ -451,11 +454,12 @@ ISR(TIMER2_COMPA_vect) // //
       if (waitcounter >2)// Impulsdauer > minimum, nach einer gewissen Zeit den Stautus abfragen
       {
          uint8_t BIT = INPIN & (1<<DATAPIN);
-         //OSZI_A_LO();
+         OSZI_A_LO();
          //OSZIAHI;
          INT0status &= ~(1<<INT0_WAIT);
          if (INT0status & (1<<INT0_PAKET_A))
          {
+             //OSZI_A_LO();
             //OSZI_B_LO();
             if (tritposition < 8) // Adresse)
             {
@@ -491,10 +495,12 @@ ISR(TIMER2_COMPA_vect) // //
                   rawdataA &= ~(1<<(tritposition-10)); // bit ist 0
                }
             }
+
          }
-         
+         //OSZI_B_HI();
          if (INT0status & (1<<INT0_PAKET_B))
          {
+            //OSZI_B_LO();
             if (tritposition < 8) // Adresse)
             {
                
@@ -536,24 +542,29 @@ ISR(TIMER2_COMPA_vect) // //
             {
                
             }
+            //OSZI_B_HI();
          }
-
+         OSZI_A_HI();
          
          if (tritposition < 17)
          {
+           
             tritposition ++;
          }
          else // Paket gelesen
          {
+            
+            //OSZI_A_LO();
             // Paket A?
             if (INT0status & (1<<INT0_PAKET_A)) // erstes Paket, Werte speichern
             {
-               
+               //OSZI_B_LO();
                oldfunktion = funktion;
                
                INT0status &= ~(1<<INT0_PAKET_A); // Bit fuer erstes Paket weg
                INT0status |= (1<<INT0_PAKET_B); // Bit fuer zweites Paket setzen
                tritposition = 0;
+               //OSZI_B_HI();
             }
             else if (INT0status & (1<<INT0_PAKET_B)) // zweites Paket, Werte testen
             {
@@ -567,10 +578,11 @@ ISR(TIMER2_COMPA_vect) // //
                if (lokadresseA && ((rawfunktionA == rawfunktionB) && (rawdataA == rawdataB) && (lokadresseA == lokadresseB))) // Lokadresse > 0 und Lokadresse und Data OK
                {
                   
-                  OSZI_A_LO();
+                  //OSZI_A_LO();
                   //SYNC_LO();
                   if (lokadresseB == LOK_ADRESSE)
                   {
+                     OSZI_B_LO();
                      INT0status |= (1<<INT0_READY); // Bearbeitung in loop
                      weichenstatus |= (1<<WEICHERUN);
                      //OSZI_A_LO();
@@ -653,7 +665,7 @@ ISR(TIMER2_COMPA_vect) // //
                   
                   
                   
-                  
+                     OSZI_B_HI();
                   }
                   else 
                   {
@@ -664,7 +676,7 @@ ISR(TIMER2_COMPA_vect) // //
                      //OSZI_A_HI();
                      return;
                   }
-
+                  
                   OSZI_A_HI();
                   //SYNC_HI();
                   
@@ -683,8 +695,9 @@ ISR(TIMER2_COMPA_vect) // //
                {
                   //               TESTPORT |= (1<<TEST2);
                }
-               SYNC_HI();
+               //SYNC_HI();
             } // End Paket B
+            
          }
         // OSZI_B_HI();
       } // waitcounter > 2
@@ -772,7 +785,7 @@ int main (void)
                 int0_init();
                
                _delay_ms(2);
-                timer2(4);
+                timer2(32);
                //sei();
                loopstatus &= ~(1<<FIRSTRUNBIT);
             }
@@ -803,7 +816,7 @@ int main (void)
          if(weichenimpulscounter > WEICHENIMPULSDAUER)
          {
             TEST1_HI();
-            OSZI_B_HI();
+            //OSZI_B_HI();
             WEICHEPORT &= ~(1<<WEICHEA_PIN);
             WEICHEPORT &= ~(1<<WEICHEB_PIN);
 
@@ -816,6 +829,7 @@ int main (void)
       loopcount0++;
       if (loopcount0>=refreshtakt)
       {
+         //LOOPLEDPORT ^= (1<<LOOPLED);
          //OSZI_B_LO();
          loopcount0=0;
          
