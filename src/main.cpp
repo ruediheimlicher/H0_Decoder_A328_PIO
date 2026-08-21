@@ -6,7 +6,7 @@
 //  Copyright __MyCompanyName__ 2007. All rights reserved.
 //
 
-
+#include <Arduino.h> 
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -153,7 +153,7 @@ volatile uint8_t   lokadresseB = 0;
 volatile uint8_t   deflokadresse = 0;
 volatile uint8_t   lokstatus=0x00; // Funktion, Richtung
 
-volatile uint8_t   oldlokdata = 0;
+volatile uint8_t   oldlokdata = 0xCE;
 volatile uint8_t   lokdata = 0;
 volatile uint8_t   deflokdata = 0;
 //volatile uint16_t   newlokdata = 0;
@@ -172,7 +172,7 @@ volatile uint8_t     speedcode = 0;
 volatile int8_t      speedintervall = 0;
 
 volatile uint8_t   dimmcounter = 0; // LED dimmwertcounter
-volatile uint8_t   ledpwm = 0x40; // LED PWM 50%
+volatile uint8_t   ledpwm = LEDPWM; // LED PWM 50%
 volatile uint8_t   ledstatus=0; // status LED
 
 
@@ -182,7 +182,7 @@ volatile uint8_t   ledoffpin = WEICHEB_PIN; // Stirnlampe OFF
 // ***
 volatile uint8_t   speed = 0;
 
-volatile uint8_t   oldfunktion = 0;
+volatile uint8_t   oldfunktion = 0x03;
 volatile uint8_t   funktion = 0;
 volatile uint8_t   deffunktion = 0;
 volatile uint8_t   waitcounter = 0;
@@ -238,6 +238,13 @@ uint16_t displaycounter1;
 
 uint16_t displayfenstercounter = 0; // counter fuer abgelaufene Zeit im Display-Fenster
 
+// ***************
+uint16_t loopcount0=0;
+
+uint16_t firstruncount0=0;
+uint16_t firstruncount1=0;
+uint8_t counter = 0;
+// ***************
 
 
 
@@ -736,29 +743,37 @@ void displayfensterfunction(void)
    _delay_ms(2);
 }
 
-
-
-int main (void) 
+void setup()
 {
-	slaveinit();
-	//uint16_t loopcount0=0;
-   uint16_t loopcount0=0;
+     Wire.begin();
+    lcd.init();
+    lcd.backlight();
+   delay(500);
+    lcd.clear();
 
-   uint16_t firstruncount0=0;
-   uint16_t firstruncount1=0;
+    lcd.setCursor(0, 0);
+    lcd.print("ATmega328PP");
 
-	_delay_ms(200);
+
+slaveinit();
+sei();
+}
+
+void loop()
+{
+	
+   
+
+	
   
-   oldfunktion = 0x03; // 0x02
-   oldlokdata = 0xCE;
-   ledpwm = LEDPWM;
+   
      
-   sei();
+   
 
-   uint8_t counter = 0;
+   
     
    
-	while (1)
+	//while (1)
    {  
       //OSZI_B_LO();
       // Timing: loop: 40 us, takt 85us, mit if-teil 160 us
