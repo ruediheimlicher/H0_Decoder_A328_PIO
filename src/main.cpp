@@ -23,11 +23,13 @@
 #include "lcd.c"
 
 //#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
 //#include "display.c"
 
 #include "text.h"
 
+//#include <LiquidCrystal_I2C.h>
+
+//LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 
 #define DISPLAY 0
@@ -36,7 +38,6 @@
 #include "adc.c"
 #define TW_STATUS   (TWSR & TW_STATUS_MASK)
 
-LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 //***********************************
 						
@@ -287,12 +288,12 @@ void slaveinit(void)
   
 
   
-/*
+
 	//LCD
 	LCD_DDR |= (1<<LCD_RSDS_PIN);	//Pin 5 von PORT B als Ausgang fuer LCD
  	LCD_DDR |= (1<<LCD_ENABLE_PIN);	//Pin 6 von PORT B als Ausgang fuer LCD
 	LCD_DDR |= (1<<LCD_CLOCK_PIN);	//Pin 7 von PORT B als Ausgang fuer LCD
-*/
+
    
    //TESTDDR |= (1<<TEST1); // test1
    //TESTPORT |= (1<<TEST1); // HI
@@ -308,6 +309,16 @@ void slaveinit(void)
     
    WEICHEDDR |= (1<<WEICHEB_PIN);  // Lampe B
    WEICHEPORT &= ~(1<<WEICHEB_PIN); // LO
+
+   WEICHEDIP_DDR &= ~(1<<WEICHEDIP0);
+   WEICHEDIP_DDR &= ~(1<<WEICHEDIP1);
+   WEICHEDIP_DDR &= ~(1<<WEICHEDIP2);
+   WEICHEDIP_DDR &= ~(1<<WEICHEDIP3);
+
+   WEICHEDIP_PORT |= (1<<WEICHEDIP0);
+   WEICHEDIP_PORT |= (1<<WEICHEDIP1);
+   WEICHEDIP_PORT |= (1<<WEICHEDIP2);
+   WEICHEDIP_PORT |= (1<<WEICHEDIP3);
    /*
    for(uint8_t i=0;i<2;i++)
    {
@@ -576,8 +587,7 @@ ISR(TIMER2_COMPA_vect) // //
                   if (lokadresseB == LOK_ADRESSE)
                   {
                      OSZI_B_LO();
-                     lokadresseA = 0; // reset
-                     lokadresseB = 0;
+                   
                      //INT0status |= (1<<INT0_READY); // Bearbeitung in loop
                      weichenstatus |= (1<<WEICHERUN);
                      //OSZI_A_LO();
@@ -588,6 +598,8 @@ ISR(TIMER2_COMPA_vect) // //
                      //weichenimpulscounter
                      lokstatus |= (1<<ADDRESSBIT);
                      deflokadresse = lokadresseB;
+                     lokadresseA = 0; // reset
+                     lokadresseB = 0;
                      //deffunktion = (rawdataB & 0x03); // bit 0,1 funktion als eigene var
                      deffunktion = rawfunktionB;
                      
@@ -620,11 +632,12 @@ ISR(TIMER2_COMPA_vect) // //
                      
                      // Weichennummer checken
                      WEICHENCODE = 0xFF;
-                     WEICHENCODE = WEICHEDIP_PIN & 0x0F;
-                     //WEICHENCODE = 0;
+                     WEICHENCODE = WEICHEDIP_PIN;
+
+                     //WEICHENCODE = (~WEICHENCODE) & 0x0F;
      
-                     //WEICHENCODE >>= 3;
-                     WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
+                     WEICHENCODE = (WEICHENCODE ^ 0xFF)  & 0x0F;
+                     //WEICHENCODE = 7-WEICHENCODE; // dipschalter ist active LOW > invertieren
                      
                      if(deflokdata == speedcodelookuptable[WEICHENCODE]) // Weiche passt
                      {
@@ -741,6 +754,22 @@ void displayfensterfunction(void)
 int main (void) 
 {
 	slaveinit();
+
+   lcd_initialize(LCD_FUNCTION_8x2, LCD_CMD_ENTRY_INC, LCD_CMD_ON);
+   _delay_ms(100);
+
+   lcd_gotoxy(0,0);
+   lcd_puts("Guten Tag\0");
+   _delay_ms(1000);
+	lcd_cls();
+	lcd_puts("READY\0");
+/*
+   
+   lcd_puts("Guten Tag\0");
+	_delay_ms(1000);
+	lcd_cls();
+	lcd_puts("READY\0");
+*/
 	//uint16_t loopcount0=0;
    uint16_t loopcount0=0;
 
@@ -756,7 +785,13 @@ int main (void)
    sei();
 
    uint8_t counter = 0;
-    
+/*
+   lcd.begin(16, 2);
+    lcd.setBacklight(HIGH);
+
+    lcd.setCursor(0, 0);
+    lcd.print("Hallo");
+    */
    
 	while (1)
    {  
@@ -811,13 +846,15 @@ int main (void)
 
          if(weichenimpulscounter > WEICHENIMPULSDAUER)
          {
-            TEST1_HI();
+            //TEST1_HI();
             //OSZI_B_HI();
             WEICHEPORT &= ~(1<<WEICHEA_PIN);
             WEICHEPORT &= ~(1<<WEICHEB_PIN);
 
+            
             //
             weichenstatus &= ~(1<<WEICHESTART);
+            
          }
          
       }
@@ -838,6 +875,16 @@ int main (void)
             LOOPLEDPORT ^= (1<<LOOPLED);
             counter++;
          }
+         lcd_gotoxy(0,1);
+         lcd_puthex(WEICHENCODE);
+         lcd_gotoxy(4,1);
+         lcd_puthex(speedcodelookuptable[WEICHENCODE]);
+         lcd_gotoxy(8,1);
+         lcd_puthex(deflokdata);
+         lcd_gotoxy(12,1);
+         lcd_putint(deflokdata);
+         lcd_gotoxy(16,1);
+         lcd_putint(deffunktion);
          
          
 
